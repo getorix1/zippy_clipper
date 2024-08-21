@@ -1,0 +1,98 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	August 11, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+//----------------------------------
+//      halt & clear program
+//----------------------------------
+
+void    on_haltProgram_clicked (GtkButton *button) {
+
+	char cmd[1024];
+
+        if (!mediaPlayer) return;
+
+	video_file = 0;
+
+	vlc_stop();
+
+	SP->Clock = 0;
+	SP->NowPlaying = -1;
+	SP->begin=0;
+	SP->Pause=0;
+	SP->OrgPlay = 1;
+	strcpy(SP->CurrentPlay, "");
+	SP->t1 = 0;
+	frame_width = 0;
+	frame_height = 0;
+
+	SP->videoPlaying = 0;
+        mouse_ul_x = -1;
+
+
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_speed), TRUE) ;
+	advance_flg = 0;
+
+        if (mediaPlayer) { libvlc_media_player_release (mediaPlayer); mediaPlayer = NULL; }
+
+	gtk_widget_hide(drawV);
+
+	gtk_widget_hide(flbl1);
+	gtk_widget_hide(flbl2);
+	gtk_widget_hide(flbl3);
+	gtk_widget_hide(flbl4);
+
+        gtk_widget_hide(sel1);
+        gtk_widget_hide(sel2);
+        gtk_widget_hide(sel3);
+        gtk_widget_hide(sel4);
+
+	gtk_widget_hide(frame_image1);
+	gtk_widget_hide(frame_image2);
+	gtk_widget_hide(frame_image3);
+	gtk_widget_hide(frame_image4);
+
+	DisplayProgramButtons();
+
+	reset_clipper();
+
+	}

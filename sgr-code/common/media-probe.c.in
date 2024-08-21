@@ -1,0 +1,88 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022 by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Jan 24, 2024
+
+//--------------------------------------------------
+//	extract meta data or display cover art
+//--------------------------------------------------
+
+#include "includes.h"
+
+#include "common-externs.h"
+
+char *	mediaProbe(char * playThis) {
+	char tmp[4096];
+	static char probe[8192];
+
+	if (playThis[strlen(playThis) - 1] == '/' ) {
+		char tmp[2048];
+		strcpy(tmp, playThis );
+		strcat(tmp, "cover.jpg");
+		if ( access(tmp, R_OK) ) {
+			strcpy(tmp, playThis );
+			strcat(tmp, "cover.png");
+			if ( access(tmp, R_OK) )  {
+				strcpy(probe, playThis);
+				strcat(probe, " is a directory with no cover images");
+				return probe;
+				}
+			}
+		strcpy(probe, "");
+		return probe; // empty string - no popup message display
+
+		}
+
+	FILE *f1;
+
+	char vlcRef[4096] = "";
+
+		strcpy(vlcRef, playThis);
+
+	// FFREPORT=file=ffreport.log:level=32 ffprobe -loglevel quiet -hide_banner -i
+
+        sprintf(tmp, "ffprobe -loglevel 8 -show_streams -select_streams v \"%s\" | "
+                "grep \"height\\|width\\|frame_rate\\|rotation\\|time_base\\|codec_name\"",
+                vlcRef);
+
+
+//	strcpy(tmp,"FFREPORT=file=ffreport.log ffprobe -hide_banner \"");
+//	strcat(tmp, vlcRef);
+//	strcat(tmp, "\" -report 2>&1");
+	f1=popen(tmp, "r");
+	if (!f1) return "";
+	strcpy(tmp, "");
+	strcpy(probe, "");
+	fgets(tmp, 8192, f1);
+	fgets(tmp, 8192, f1);
+	while (fgets(tmp, 8192, f1)) {
+		strcat(probe,tmp);
+		strcpy(tmp, "");
+		}
+	fclose(f1);
+	return probe;
+	}

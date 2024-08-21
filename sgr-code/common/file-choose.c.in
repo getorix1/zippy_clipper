@@ -1,0 +1,101 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Jan 29, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+
+void on_choose1_file_set (GtkFileChooserButton *f) {
+        FileChooser(f);
+        return;
+        }
+
+
+void    FileChooser (GtkFileChooserButton *b) {
+
+	char tmp[8192];
+
+	gchar *directory, *p1;
+
+	p1 = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(b));
+	if (p1 == NULL) return;
+
+	sprintf(tmp, "cp --no-clobber \"%s\" \"%s\"", p1, Music_Home_Directory);
+	printf("%s\n", tmp);
+	system(tmp);
+	g_free(p1);
+	on_scan_video_dir_clicked(NULL);
+	return;
+
+	p1 = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(b));
+
+printf("============================================================\n");
+printf("%s\n%s\n", p1, directory);
+printf("============================================================\n");
+
+	if (p1 != NULL) {
+		char tmp[4096];
+		sprintf(tmp, "readlink -f \"%s\"/* > \"%s\"", directory, Program_List);
+		printf("Scan: directory=           %s\n", directory);
+		printf("Scan: program list target= %s\n", Program_List);
+
+		int err_stat = system(tmp);
+
+		if (err_stat != 0) {
+			zippy_says("An error occurred\n");
+			g_free (directory);
+			return;
+			}
+
+		strcpy(tmp, Program_List);
+
+		LoadProgram(tmp);
+		strcpy(Music_Home_Directory, directory);
+		chdir(Music_Home_Directory);
+		gtk_label_set_text (dir_label, directory);
+		}
+
+	g_free (directory);
+	g_free (p1);
+	return;
+
+	}
+
+

@@ -1,0 +1,95 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+      by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Feb 5, 2024
+
+        #include "includes.h"
+        #include "common-externs.h"
+
+//--------------------------------------------
+//	Get the playing time for a media file
+//--------------------------------------------
+
+double	GetTime (char *file) {
+
+	FILE *f1;
+	char *p1;
+	int i, j, k;
+
+	int ft;
+	ft  = filetype(file);
+
+	if (ft == URL || ft >= 100 || ft == UNRECOGNIZED) {
+		return -1;	// play time
+		}
+
+		static int x = 1;
+
+		if (x) {
+			x=0;
+//			av_register_all();
+			}
+
+		if (file[strlen(file)-1] == '/' ) return -1;
+
+		AVFormatContext* pFormatCtx = avformat_alloc_context();
+
+		int ex;
+
+			ex = avformat_open_input(&pFormatCtx, file, NULL, NULL);
+
+		if (ex < 0 ) { // vlc error
+			printf("\n*** File %s appears to have errors.\n", file);
+			return -1; // a time of zero will prevent re-try
+			}
+
+		avformat_find_stream_info(pFormatCtx, NULL);
+
+		int64_t duration = pFormatCtx->duration;
+
+		avformat_close_input(&pFormatCtx);
+		avformat_free_context(pFormatCtx);
+
+		return ((double)duration/AV_TIME_BASE);	// play time
+
+//---------------------------------------------------------------------------------------------
+//	another but slower way to capture time info
+//		strcpy(tmp,"ffprobe -v quiet -of csv=p=0 -show_entries format=duration \"");
+//		strcat(tmp, file);
+//		strcat(tmp, "\"");
+//		f1=popen(tmp, "r"); strcpy(tmp, ""); fgets(tmp, 256, f1); fclose(f1);
+//		p1=strstr(tmp, ".");
+//		if (p1 != NULL) *p1=0;
+//		else { strcpy(tmp, "");}
+//		strcpy(Time, tmp);
+//		return (programTime[ref] = atoi(Time));	// play time
+//---------------------------------------------------------------------------------------------
+//		}
+
+	}
+

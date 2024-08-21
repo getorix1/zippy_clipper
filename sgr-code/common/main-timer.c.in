@@ -1,0 +1,209 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//      July 8, 2024
+
+        #include "includes.h"
+        #include "common-externs.h"
+
+        #define SLASH '/'
+
+//----------------------------------------------
+//	Main Timer
+//----------------------------------------------
+
+gboolean	timer_handler(struct APW *widgets) {
+
+//--------------------------------------------------
+//	enter critical section
+//	only one thred at a time allowed to enter
+//--------------------------------------------------
+
+//	gdk_threads_enter();
+
+	gint x,y;
+	char cmd[1024];
+	char cmd1[1024];
+	int i,j;
+	char tmp[1024],dmy[64];
+	double Lmax =0.0,  Rmax = 0.0;
+
+//--------------------------------
+//	media time scan running?
+//--------------------------------
+
+	if (scan_in_progress) {
+//		gdk_threads_leave();
+		return TRUE;
+		}
+
+	if (firstTime) { // first time the timer entered
+
+		firstTime = 0; // don't do this again
+
+		MaxAudioSample = 0; // permit AGC to raise gain if AGC on
+
+//		on_scan_video_dir_clicked(NULL);
+
+		} // done with first time only code
+
+	if (advance_flg) {
+		advance_flg = 0;
+		}
+
+	if (vlc_up_pressed) {
+		forward_move(500);
+		}
+
+	if (vlc_down_pressed) {
+		back_move(500);
+		}
+
+//---------------------------------------------------
+//	update playlist slider and gain label colors
+//---------------------------------------------------
+
+	int is_playing = 0;
+
+//-------------------------------------
+//	enumerators
+//	libvlc_NothingSpecial 	
+//	libvlc_Opening 	
+//	libvlc_Buffering 	
+//	libvlc_Playing 	
+//	libvlc_Paused 	
+//	libvlc_Stopped 	
+//	libvlc_Stopping = 6 vlc err
+//	libvlc_Error 
+//-------------------------------------
+
+	if (mediaPlayer) {
+
+		libvlc_state_t st = 
+			libvlc_media_player_get_state(mediaPlayer);
+
+		if (st == libvlc_Paused || st == libvlc_Playing) {
+                	update_vlcPosition(); // slider
+			}
+
+		else if (st == 6 || st == libvlc_Stopped) {
+			printf("stopped or stopping\n");
+			programData[SP->NowPlaying]->last_location = 0;
+			vlc_start(); // restart
+
+			if (cropLeft || cropRight || cropTop || cropBottom) {
+
+				#ifdef VLC4
+        				libvlc_video_set_crop_border(mediaPlayer, 
+						cropLeft, cropRight, cropTop, cropBottom);
+				#else
+        				char tmp[64];
+        				sprintf(tmp, "%d+%d+%d+%d", (int) cropLeft, (int) cropTop,
+                				(int) cropRight, (int) cropBottom);
+        				libvlc_video_set_crop_geometry(mediaPlayer, tmp);
+				#endif
+				}
+
+			}
+		}
+
+	if (SP->playClip) { // play single file
+		SP->skipCurrent = 0;
+		SP->playClip = 0;
+		vlc_start();
+		}
+
+//------------------------------
+//	set time of day string
+//------------------------------
+
+        struct tm *tod;
+        time_t tx = time(NULL);         // get normal time of day
+        tod = localtime(&tx);           // get time structure pointer
+
+        strcpy(time_string, asctime(tod));      // ASCII string of time
+        time_string[strlen(time_string)-1] = 0; // char at end
+        gtk_label_set_text(GTK_LABEL(time_of_day), time_string);
+
+//--------------------------------------------------------
+//	used by graphical clock - not used at the moment
+//--------------------------------------------------------
+
+        second = tod->tm_sec;           // extract seconds
+        minute = tod->tm_min;           // extract minutes
+        hour = tod->tm_hour % 12;       // extract hour (12)
+
+	time_t t = time(0); // unix time
+	struct tm *T = localtime(&t);
+
+//------------------------------------------------------
+//	reload main panel title text //	every 5 seconds
+//------------------------------------------------------
+
+	if (t % 5 == 0) { 
+		char tmp[2048];
+		sprintf(tmp, "%s/title.txt", Code_Home);
+		FILE *s1 = fopen(tmp, "r");
+		if (s1) {
+			fgets(tmp, 100, s1);
+			tmp[strlen(tmp)-1] = 0;
+			gtk_label_set_text(GTK_LABEL(sgrStudio), tmp); // overwrites default title
+			fclose(s1);
+			}
+		}
+
+
+	if (mediaPlayer && (i = strlen(SP->CurrentPlay))) { // update currently playing
+		char tmp[16000];
+
+		if (frame_height == 0) 
+			libvlc_video_get_size (mediaPlayer, 0, &frame_width, &frame_height);
+
+		for (; i > 0; i--) if (SP->CurrentPlay[i] == '/') break;
+		
+		sprintf(tmp, "Clip: %dx%d %s", 
+			frame_width, frame_height, &SP->CurrentPlay[i]);
+
+		gtk_label_set_text(GTK_LABEL(widgets->currentFile), tmp); 
+
+		if (clip_end > clip_start)
+			sprintf(tmp,"Clip Len: %0.2f", (clip_end - clip_start) / 1000.0);
+
+		else strcpy(tmp,"0.00");
+
+		gtk_label_set_text(GTK_LABEL(clip_length), tmp); 
+		}
+	else
+		gtk_label_set_text(GTK_LABEL(widgets->currentFile), "Now Playing:"); 
+
+	static int lastPlaying = -1;
+
+//	gdk_threads_leave();
+	return TRUE; // come back, please
+	}
+

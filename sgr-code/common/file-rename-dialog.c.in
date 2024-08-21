@@ -1,0 +1,144 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Feb 24, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+void    file_name_rename(char *old_name) {
+
+	char tmp[1024];
+	int i;
+
+	i = filetype(old_name);
+
+	if (i == URL) {
+		zippy_says("URLs cannot be renamed\n");
+		return;
+		}
+
+	if (strlen(old_name) > 4000) {
+		zippy_says("File name too long\n");
+		zippy_says(old_name);
+		zippy_says("\n\n");
+		return;
+		}
+
+	for (i = strlen(old_name); i > 0; i--)
+		if (old_name[i] == '/') break;	
+
+	if (i == 0) {
+		zippy_says("File name error\n");
+		zippy_says(old_name);
+		zippy_says("\n\n");
+		return;
+		}
+
+	if (i == strlen(old_name)) {
+		zippy_says("Bad file name\n");
+		zippy_says(old_name);
+		zippy_says("\n\n");
+		return;
+		}
+
+	strcpy(rename_old, old_name);
+
+	strcpy(rename_prefix, old_name);
+	rename_prefix[i+1] = 0;
+
+	strcpy(rename_fname, &old_name[i+1]);
+
+	strcpy(tmp, "Rename: ");
+	strcat(tmp, rename_fname);
+
+	vlc_pause();
+
+	gtk_entry_set_text (file_name_entry, (gchar *) rename_fname);
+        gtk_window_set_title(GTK_WINDOW(file_name),tmp);
+        gtk_widget_show(file_name);  // show dialog
+	gtk_window_set_keep_above(GTK_WINDOW(file_name), TRUE);
+
+        }
+
+void	on_file_name_cancel_clicked(GtkWidget *w) {
+        gtk_widget_hide(file_name);  // hide dialog
+	}
+
+void	on_file_name_ok_clicked(GtkWidget *w) {
+
+	const gchar *sentry = gtk_entry_get_text( file_name_entry );
+
+        gtk_widget_hide(file_name);  // hide dialog
+
+	if (strlen(sentry) == 0) {
+		zippy_says("Empty File Name\n\n");
+		return;
+		}
+
+	char new_name[4096];
+
+	strcpy(new_name, rename_prefix);
+	strcat(new_name, sentry);
+
+	char tmp[16000];
+
+	sprintf(tmp, "Rename: %s\nto: %s\n", rename_old, new_name);
+
+	zippy_says(tmp);
+
+	sprintf(tmp, "mv \"%s\" \"%s\" ", rename_old, new_name);
+	
+	int err = system(tmp);
+
+	if (err != 0) {
+		zippy_says("There was an error renaming the file\n\n");
+		}
+
+	sprintf(tmp, "touch \"%s\" ", new_name);
+	
+	err = system(tmp);
+
+	if (err != 0) {
+		zippy_says("There was an error renaming the file\n\n");
+		}
+
+	on_scan_video_dir_clicked(NULL);
+
+	}
+
