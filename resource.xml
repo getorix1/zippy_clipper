@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="part1">
+    <file preprocess="xml-stripblanks">Zippy.glade</file>
+    <file>icons/back640x480.jpg</file>
+    <file>icons/sgrMask.jpg</file>
+    <file>icons/zippylogo.png</file>
+    <file>icons/sgr001.jpg</file>
+    <file>icons/sgr002.jpg</file>
+    <file>css/gtk.css</file>
+    <file>css/switcher.css</file>
+    <file>css/albumButton.css</file>
+    <file>css/save1.css</file>
+    <file>css/firstPage.css</file>
+    <file>css/lastPage.css</file>
+    <file>css/priorPage.css</file>
+    <file>css/nextPage.css</file>
+    <file>css/showCurrent.css</file>
+    <file>css/pauseAtEnd.css</file>
+    <file>css/pauseAtEnd1.css</file>
+    <file>css/pauseVideo.css</file>
+    <file>css/playerx.css</file>
+    <file>css/randomize.css</file>
+    <file>css/skipNext.css</file>
+    <file>css/playPgm.css</file>
+    <file>css/exit_pgm.css</file>
+    <file>css/haltProgram.css</file>
+    <file>css/micMute.css</file>
+    <file>css/stack.css</file>
+    <file>css/sndrPlayed.css</file>
+    <file>icons/updown.png</file>
+    <file>icons/mabel.jpg</file>
+    <file>include/helpme.txt</file>
+  </gresource>
+</gresources>

@@ -1,0 +1,434 @@
+#!/bin/bash
+
+# ------------------------------------------------------------------------------------------
+#
+# Internet Radio Automation & Encoding Toolkit
+# 
+# kc.okane@gmail.com
+# okane@cs.uni.edu
+# https://threadsafebooks.com/
+# https://www.cs.uni.edu/~okane
+# 
+# Copyright (C) 2019 by Kevin C. O'Kane
+# 
+# This program described herein is free software; you can redistribute it 
+# and/or modify it under the terms of the GNU General Public License as 
+# published by the Free Software Foundation; either version 2 of the 
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT 
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along with 
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+# Place, Suite 330, Boston, MA  02111-1307  USA.
+# 
+# ------------------------------------------------------------------------------------------
+
+# March 18, 2023
+
+# This script is for Debian related systems that use the apt (formerlly, apt-get)
+# package for system updates. It will not work on system that do not use apt.
+
+# This script can be used to install most of the software needed for the different
+# configurations found here. Much of this software may already be installed.
+# If a package is already installed, this script will not change it.
+# All packages are downloaded for your system's standard repositories.
+# 
+#
+# to run:
+#
+#	sudo ./install.script
+#
+# This will take some time to run and you will see many messages scroll by.
+# When it finishes, it will compile the code and run it.
+#
+
+        if [ `whoami` != "root" ]; then
+                echo
+                echo -------------------------------------------
+                echo "**** you must be root to run this script"
+                echo -------------------------------------------
+                echo
+                exit
+                fi
+
+        if [ -z `which apt-get` ]; then
+                echo "apt-get not found"
+                echo "apt-get is required"
+                echo "The installation will only work on systems that use apt-get"
+                echo "halting ........"
+                echo
+                fi
+
+        echo
+        echo "apt-get found"
+
+# temporary PATH modification 
+
+PATH=$PATH:$HOME/bin:.:/bin:/sbin:
+
+# some systems may require the following - ONCE
+# add-apt-repository ppa:ubuntu-desktop/ppa 
+
+apt-get update
+
+apt-get -q -y install libreadline-dev
+
+if [ $? -ne 0 ]; then
+	echo "readline"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install ffmpeg
+
+if [ $? -ne 0 ]; then
+	echo "ffmpeg"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libavcodec-extra
+
+if [ $? -ne 0 ]; then
+	echo "libavcodec-extra"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libavfilter7
+
+if [ $? -ne 0 ]; then
+	echo "libavfileter7"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+apt-get --yes install libavformat-dev
+
+if [ $? -ne 0 ]; then
+	echo "libavformat"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+apt-get --yes install libavcodec-extra58
+
+if [ $? -ne 0 ]; then
+	echo "libavcodec-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libgtk-3-dev
+
+if [ $? -ne 0 ]; then
+	echo "libgtk-3-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install gnome-terminal
+
+if [ $? -ne 0 ]; then
+	echo "gnome-terminal"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install mpv
+
+if [ $? -ne 0 ]; then
+	echo "mpv"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install vlc
+
+if [ $? -ne 0 ]; then
+	echo "vlc"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install pulseaudio
+
+if [ $? -ne 0 ]; then
+	echo "pulseaudio"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install gcc
+
+if [ $? -ne 0 ]; then
+	echo "gcc"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install g++
+
+if [ $? -ne 0 ]; then
+	echo "g++"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libpulse-dev
+
+if [ $? -ne 0 ]; then
+	echo "libpulse-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+# we want gtkmm-2.4 as well
+
+apt-get --yes install libgtkmm-2.4-dev
+
+if [ $? -ne 0 ]; then
+	echo "libgtkmm-2.4-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libgtkmm-3.0-dev
+
+if [ $? -ne 0 ]; then
+	echo "libgtkmm-3.0-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libgtk-3-0 
+
+if [ $? -ne 0 ]; then
+	echo "libgtk-3-0 "
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install wmctrl
+
+if [ $? -ne 0 ]; then
+	echo "wmctrl"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install pulseaudio-utils
+
+if [ $? -ne 0 ]; then
+	echo "pulseaudio-utils"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install webkit2gtk-4.0-dev
+
+if [ $? -ne 0 ]; then
+	echo "webkit2gtk-4.0-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install glade
+
+if [ $? -ne 0 ]; then
+	echo "glade"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install pkg-config
+
+if [ $? -ne 0 ]; then
+	echo "pkg-config"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install x11-xserver-utils
+
+if [ $? -ne 0 ]; then
+	echo "x11-xserver-utils"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install fftw3-dev
+
+if [ $? -ne 0 ]; then
+	echo "fftw3-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install autoconf
+
+if [ $? -ne 0 ]; then
+	echo "autoconf"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libvlc-dev
+
+if [ $? -ne 0 ]; then
+	echo "libvlc-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libvlccore-dev
+
+if [ $? -ne 0 ]; then
+	echo "libvlccore-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libavformat-dev
+
+if [ $? -ne 0 ]; then
+	echo "libavformat-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install imagemagick
+
+if [ $? -ne 0 ]; then
+	echo "magemagick"
+	echo "apt-get install imagemagic did not return 0 - probable error"
+	exit
+	fi
+
+#apt-get --yes install libgstreamer1.0-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
+gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc \
+gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 \
+gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+apt-get --yes install gstreamer1.0-libav*
+
+if [ $? -ne 0 ]; then
+	echo "gstreamer install"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install v4l-utils
+
+if [ $? -ne 0 ]; then
+	echo "v4l-utils"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libgstreamer-plugins*
+
+if [ $? -ne 0 ]; then
+	echo "libgstreamer-plugins*"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install guvcview*
+
+if [ $? -ne 0 ]; then
+	echo "guvcview*"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install libvlccore-dev*
+
+if [ $? -ne 0 ]; then
+	echo "libvlccore-dev*"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+# apt-get --yes install avformat*
+
+# if [ $? -ne 0 ]; then
+# 	echo "avformat*"
+# 	echo "apt-get did not return 0 - probable error"
+# 	exit
+# 	fi
+
+apt-get --yes install libvlc-dev*
+
+if [ $? -ne 0 ]; then
+	echo "libvlc-dev*"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install net-tools 
+
+if [ $? -ne 0 ]; then
+	echo "installnet-tools"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install gtk-3-examples
+
+if [ $? -ne 0 ]; then
+	echo "gtk-3-examples"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get --yes install cpulimit
+
+if [ $? -ne 0 ]; then
+	echo "cpulimit"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+apt-get -q -y install libreadline-dev
+
+if [ $? -ne 0 ]; then
+	echo "readline"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+
+apt-get --yes install inxi
+
+# some systems have this pre-installed
+# if [ $? -ne 0 ]; then
+# 	echo "inxi"
+# 	echo "apt-get did not return 0 - probable error"
+# 	exit
+# 	fi
+
+apt-get  --yes install libwebkit2gtk-4.0-dev
+
+if [ $? -ne 0 ]; then
+	echo "libwebkitgtk-4.0-dev"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+echo "+++++++++++++++++++++++"
+
+apt-get --yes install sqlite3 sqlite3-doc sqlite3-pcre libsqlite3-dev
+
+if [ $? -ne 0 ]; then
+	echo "sqlite"
+	echo "apt-get did not return 0 - probable error"
+	exit
+	fi
+
+# apt-get install ffmpeg libavcodec-dev libavcodec57 libavdevice-dev libavdevice57 libavfilter-dev libavfilter6 libavformat-dev libavformat57 libavresample-dev libavresample3 libavutil-dev libavutil55 libpostproc-dev libpostproc54 libswresample-dev libswresample2 libswscale-dev libswscale4
+
+
+echo "********** done ***************"
+echo

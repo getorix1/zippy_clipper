@@ -1,0 +1,629 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+%+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	August 1, 2024
+
+//------------------------------------------------------------------
+//	This is the root file for the Linux version of the player
+//------------------------------------------------------------------
+
+#define _GNU_SOURCE
+
+#include "common/includes.h"
+#include "common/structures.h"
+#include "common/defines.h"
+#include "common/common-fcn-headers.h"
+#include "common/global-vars.h"
+#include "common/common-widgets.h"
+#include "common/common-externs.h"
+
+#define WSL2 @wsl2@
+@system@
+
+struct THR1 thr_data;
+
+void    sigint(int s) {
+        printf("\nSignal received: %d %d\n\n", s, SIGUSR1);
+        on_scan_video_dir_clicked(NULL);
+        }
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// main main main main main main main main main main main main main
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+int main(int argc, char *argv[]) {
+
+	char cmd[2048], tmp[2048];
+	int i, j, k, m, n;
+
+//--------------------------------------------------------------
+//	Following must be called before any other X11 calls
+//	Needed in order to enable vdpau in vlc in Windows WSL2
+//--------------------------------------------------------------
+
+	setenv("GDK_BACKEND", "x11", 1);
+	setenv("AV_LOG_FORCE_NOCOLOR", "1", 1);
+
+	XInitThreads();
+
+	printf("\n-------- S T A R T-------------------------------\n");
+
+//-----------------------------------------------------------------------------
+//	The setting of the GDK_BACKEND above to x11 appears to solve the
+//	Wayland problem the following was written to address but the code
+//	is retained in case the problem comes back.
+//
+//	{	char *p = getenv("XDG_SESSION_TYPE");
+//		if (p == NULL) {
+//			p = getenv("GDK_BACKEND");
+//			if (p == NULL) {
+//				strcpy(session_type, "NULL");
+//				}
+//			else strcpy(session_type, p);
+//			}
+//
+//		else strcpy(session_type, p);
+//		}
+//
+//	printf("*** session type: %s\n", session_type);
+//-----------------------------------------------------------------------------
+
+	srand( (unsigned int) time(0) );
+
+//---------------------------------------
+//	ffmpeg interface
+//	must be called here - do not move.
+//---------------------------------------
+
+#ifndef FEDORA
+#ifndef ARCH
+	av_register_all();
+#endif
+#endif
+
+	memory_alloc();
+
+//----------------------------------------------------------------------
+//	Establish the location for the code directory
+//	The files 'program.lst' and 'sounders.config' should be here.
+//	'program.lst' contains the references to the music files.
+//----------------------------------------------------------------------
+
+	readlink("/proc/self/exe", Code_Home, 1024); // where are we?
+
+	for (i = strlen(Code_Home); i > 0; i--)
+		if (Code_Home[i] == '/' ) {
+			Code_Home[i] = 0;
+			break;
+			}
+
+	if (i == 0) {
+		printf("Directory error finding Code_Home\n");
+		return EXIT_FAILURE;
+		}
+
+
+	printf("Code home directory: %s\n", Code_Home);
+
+	strcpy(Program_List, "\"");
+	strcat(Program_List,Code_Home);
+	strcat(Program_List,"/videos/program.lst");	// file address of tmp.lst
+	strcat(Program_List, "\"");
+
+	printf("Code Home: %s\n", Code_Home);
+
+	strcpy(Music_Home_Directory, Code_Home);
+	strcat(Music_Home_Directory, "/videos");
+
+	printf("Music Home Directory: %s\n", Music_Home_Directory);
+
+	printf("Sounder Max: %d\n", PROGRAM_MAX);
+	printf("Program List: %s\n\n", Program_List);
+
+/*******************
+	{
+		char tmp[8192];
+
+		int i = empty_dir("videos");
+
+		if (i == 0) 
+			sprintf(tmp, "cat /dev/null > \"%s\"", Program_List);
+		else
+			sprintf(tmp, "readlink -f videos/* > \"%s\"", Program_List);
+
+		system(tmp);
+	}
+*********************/
+
+//------------------------
+//      init constants
+//------------------------
+
+        copyClipRow=-1;
+        strcpy(cutRow,"");
+        strcpy(top1,"");
+        strcpy(top2,"");
+        strcpy(top3,"");
+        cutPlayed=0;
+        cutPlay=0;
+        e7Row=0;
+        e8Row=0;
+        e9Row=0;
+        e10Row=0;
+        e11Row=0;
+        e12Row=0;
+        e13Row=0;
+        e14Row=0;
+        e2Row=0;
+        e3Row=0;
+        e4Row=0;
+        e15Row=0;
+
+//----------------------------------------------------------------
+//      allocate memory for program entries
+//----------------------------------------------------------------
+
+        for (i=0; i < PROGRAM_MAX; i++ ) {
+
+//-------------------------------------
+//	allocate shared memory for ST
+//-------------------------------------
+
+                programData[i] = (struct ST *) malloc(sizeof(struct ST));
+
+                programData[i]->play = 0; // play it?
+//                programData[i]->del = 0; // delete it?
+		programData[i]->last_location = 0; // last point played
+                programPlayed[i] = 0; // play count
+                programTime[i] = -1;
+                }
+
+//------------------------------------------------------------------
+//      PGM_MAX is the maximum length of a line in the program list
+//------------------------------------------------------------------
+
+	SP->scount = 0;
+
+        while(SP->scount < PROGRAM_MAX) { // blank out entire list
+
+                ProgramArray[SP->scount] = (char *) malloc(PGM_MAX);
+                strcpy(ProgramArray[SP->scount],"");
+                programData[SP->scount]->play = 0;
+                programPlayed[SP->scount] = 0; // play count
+                (SP->scount)++;
+                }
+
+        widgets = (struct APW*) malloc(sizeof(struct APW));
+
+        gtk_init(&argc, &argv);
+
+
+//GtkRecentManager *manager;
+//GError** rerror;
+//manager = gtk_recent_manager_get_default ();
+//gtk_recent_manager_purge_items ( manager, rerror);
+//gtk_recent_manager_add_item (manager, file_uri);
+
+// g_object_set (gtk_settings_get_default (), "gtk-recent-files-enabled", FALSE, NULL);
+// g_object_set (gtk_settings_get_default (), "gtk-recent-files-limit", 5, NULL);
+
+//---------------------------------------------------------------------
+// establish contact with xml code used to adjust widget settings
+//---------------------------------------------------------------------
+
+        builder = gtk_builder_new_from_resource ("/part1/Zippy.glade");
+
+        window = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
+
+        gtk_builder_connect_signals(builder, NULL);
+
+        g_signal_connect(window, "destroy", G_CALLBACK(on_window_main_destroy), NULL);
+
+	gtk_widget_add_events(GTK_WIDGET(window), GDK_CONFIGURE);
+        g_signal_connect(window, "configure-event", G_CALLBACK(on_window_main_configure), NULL);
+
+//---------------------------------------------------------------------
+// get the definitions of the major components / widgets
+//---------------------------------------------------------------------
+
+#include "common/common-objects.h"
+
+//----------------------------------------------------------------
+//	make these button pointers available to the timer function
+//----------------------------------------------------------------
+
+        widgets -> currentFile = currentFile;
+        widgets -> run_result = run_result;
+
+//--------------------------
+//	css provider code
+//--------------------------
+
+	cssProvider_top		= gtk_css_provider_new();
+	cssProviderUP		= gtk_css_provider_new();
+	cssProviderProg		= gtk_css_provider_new();
+	cssProviderDOWN		= gtk_css_provider_new();
+	cssProviderpauseVideo	= gtk_css_provider_new();
+	cssProvider_entry1	= gtk_css_provider_new();
+	cssProvider_entry2	= gtk_css_provider_new();
+	cssProvider_entry2a	= gtk_css_provider_new();
+	cssProvider_entry3	= gtk_css_provider_new();
+	cssProvider_entry4	= gtk_css_provider_new();
+
+//-------------------------------------
+//
+//	import GTK theme for the Editor
+//
+//-------------------------------------
+
+	GtkCssProvider  *cssProviderMain;
+	cssProviderMain  = gtk_css_provider_new();
+	gtk_css_provider_load_from_resource(cssProviderMain, "/part1/css/gtk.css");
+	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
+	                GTK_STYLE_PROVIDER(cssProviderMain),
+	                GTK_STYLE_PROVIDER_PRIORITY_USER);
+
+//---------------------------------------------
+//	create providers to be used elsewhere
+//---------------------------------------------
+
+	gtk_css_provider_load_from_data(cssProvider_entry1,
+		"* { color: " UNPLAYED_ROW_TEXT_COLOR "; font-size: " 
+		UNPLAYED_ROW_FONT_SIZE "; background: " UNPLAYED_ROW_BG_COLOR "; border-color: #000000;}",
+		-1, NULL); // bg color of 12 pgm entry boxes
+
+	gtk_css_provider_load_from_data(cssProvider_entry2,
+		"* { background-color: " PLAYING_ROW_BG_COLOR "; border-color: #ff0000;}",
+		-1, NULL); // color of entry box of playing row
+
+	gtk_css_provider_load_from_data(cssProvider_entry2a,
+		"* { font-size: " UNPLAYED_ROW_FONT_SIZE ";background-color: " UNPLAYED_ROW_BG_COLOR "; border-color: #ffffff;}",
+		-1, NULL); // color of entry box of playing row
+
+	gtk_css_provider_load_from_data(cssProvider_entry3,
+		"* { font-size: " PLAYED_ROW_FONT_SIZE "; background-color: " PLAYED_ROW_BG_COLOR "; }",
+		-1, NULL);
+
+//	gtk_css_provider_load_from_data(cssProvider_entry4,
+//		"* { font-size: " PLAYED_ROW_FONT_SIZE "; background-color: " WEB_ROW_BG_COLOR "; }",
+//		-1, NULL);
+
+	gtk_css_provider_load_from_data(cssProvider_entry4,
+		"* { background-color: #ff0000; border-color: #ffffff;}",
+		-1, NULL); // color of entry box of playing row
+
+	gtk_css_provider_load_from_data(cssProviderUP,
+		"slider { border: 0px solid blue; padding-left: 0px; padding-right: 0px; "
+		"min-height: 10px; border-radius: 16px; outline: black; background: "
+		"lightgreen; border-color: black;} "
+		"trough {min-width: 5px; background-color: blue; border-radius: 10px; } "
+		" scrollbar {background: black; } ", -1, NULL);
+
+	gtk_css_provider_load_from_data(cssProviderDOWN,
+		"slider { border: 0px solid blue; padding-left: 0px; padding-right: 0px; "
+		"min-height: 10px; border-radius: 16px; outline: black; background: "
+		"lightgreen; border-color: black;} "
+		"trough {min-width: 5px; background-color: red; border-radius: 10px; } "
+		" scrollbar {background: black; } ", -1, NULL);
+
+	gtk_css_provider_load_from_data(cssProvider_top,
+		" * { font-family: mono; font-weight: bold; font-size: 14px ; "
+		"background-color: black; color: yellow; } ",
+		-1, NULL);
+
+	gtk_css_provider_load_from_data(cssProviderProg,
+		"* { border: 0px solid blue; padding-left: 0px; padding-right: 0px; "
+		"border-radius: 0px; outline: black; background: lightblue; border-color: black;} "
+		"trough {background-color: black;} ", -1, NULL);
+
+//------------------------------------------------------------------------
+//	future reference
+//	gtk_entry_set_width_chars (GTK_ENTRY(searchEntry2), entryWidth);
+//------------------------------------------------------------------------
+
+        gtk_widget_set_events(window, GDK_POINTER_MOTION_MASK);
+//	gtk_widget_set_events(scroll, GDK_SCROLL_MASK);
+        gtk_widget_set_events(vlcPosition, GDK_SCROLL_MASK);
+        gtk_widget_set_events(button3,  GDK_SCROLL_MASK);
+        gtk_widget_set_events(button8,  GDK_SCROLL_MASK);
+        gtk_widget_set_events(button9,  GDK_SCROLL_MASK);
+        gtk_widget_set_events(button2,  GDK_SCROLL_MASK);
+        gtk_widget_set_events(button5,  GDK_SCROLL_MASK);
+        gtk_widget_set_events(button6,  GDK_SCROLL_MASK);
+        gtk_widget_set_events(button10, GDK_SCROLL_MASK);
+        gtk_widget_set_events(button11, GDK_SCROLL_MASK);
+        gtk_widget_set_events(button13, GDK_SCROLL_MASK);
+        gtk_widget_set_events(button12, GDK_SCROLL_MASK);
+        gtk_widget_set_events(button14, GDK_SCROLL_MASK);
+        gtk_widget_set_events(button15, GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry7), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry8), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry9), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry10), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry11), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry12), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry13), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry14), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry2), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry3), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry4), GDK_SCROLL_MASK);
+        gtk_widget_set_events(GTK_WIDGET(entry15), GDK_SCROLL_MASK);
+
+        gtk_widget_set_events(GTK_WIDGET(drawV1), GDK_ALL_EVENTS_MASK);
+
+
+//---------------------------------------------------------------------
+// load the first 24 program buttons with content
+//---------------------------------------------------------------------
+
+	LoadProgram(Program_List);
+
+//        on_scan_video_dir_clicked(NULL);
+
+	DisplayProgramButtons();	// first 24 buttons loaded
+
+	SP->begin = 0;	// next window begins here
+	SP->Xbegin = 0;	// next window begins here
+
+	g_object_unref(builder);
+
+	for (int i = 0; i < 5; i++) strcpy(directories[i], Music_Home_Directory);
+
+//-----------------------
+//	main timer setup
+//-----------------------
+
+	g_timeout_add_seconds(1, (GSourceFunc) timer_handler, widgets);
+//	g_timeout_add(200, (GSourceFunc) timer_handler, widgets);
+
+	gtk_widget_show(window);
+
+	gtk_widget_hide(egg_image); 
+
+	chdir(Music_Home_Directory);
+
+//---------------------------
+//      Background colors
+//---------------------------
+
+        GdkColor color; // default background color
+
+	background_color.red   = BACKGROUND_COLOR_DEFAULT_RED;
+	background_color.green = BACKGROUND_COLOR_DEFAULT_GREEN;
+	background_color.blue  = BACKGROUND_COLOR_DEFAULT_BLUE;
+
+	color.red   = BACKGROUND_COLOR_DEFAULT_RED;
+	color.green = BACKGROUND_COLOR_DEFAULT_GREEN;
+	color.blue  = BACKGROUND_COLOR_DEFAULT_BLUE;
+
+        gtk_widget_modify_bg(window, GTK_STATE_NORMAL, &background_color);
+
+//-----------------------------
+//      attch to this window
+//-----------------------------
+
+        gtk_window_set_transient_for (GTK_WINDOW(g_dbox4), GTK_WINDOW(window));
+        gtk_window_set_transient_for (GTK_WINDOW(g_dbox5), GTK_WINDOW(window));
+        gtk_window_set_transient_for (GTK_WINDOW(file_name), GTK_WINDOW(window));
+        gtk_window_set_transient_for (GTK_WINDOW(text_frame), GTK_WINDOW(window));
+
+        SP->Pause = 0;
+
+//--------------------------------------------------
+//      set maximum limit of program scroll bar
+//      set increment of program scroll bars
+//--------------------------------------------------
+
+//        gtk_range_set_range (GTK_RANGE(scroll), 0, SP->scount);
+//        gtk_range_set_increments (GTK_RANGE(scroll), 1., 1.);
+
+	GdkColor frames;
+
+        frames.red       = 0x3333;
+        frames.green     = 0x3333;
+        frames.blue      = 0x6666;
+
+        gtk_widget_modify_bg(join_group, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group1, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group2, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group3, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group4, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group5, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group6, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group7, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group8, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group9, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group10, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group11, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group12, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group13, GTK_STATE_NORMAL, &frames);
+	gtk_widget_modify_bg(join_group14, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group15, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group16, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group18, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group19, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group20, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(join_group21, GTK_STATE_NORMAL, &frames);
+
+        frames.red       = 0x0000;
+        frames.green     = 0x0000;
+        frames.blue      = 0x0000;
+
+        gtk_widget_modify_bg(posLbl, GTK_STATE_NORMAL, &frames);
+
+        gtk_widget_modify_bg(join_group17, GTK_STATE_NORMAL, &frames);
+
+        frames.red       = 0x6666;
+        frames.green     = 0x6666;
+        frames.blue      = 0x7777;
+
+        gtk_widget_modify_bg(top1_back, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(top1_back1, GTK_STATE_NORMAL, &frames);
+        gtk_widget_modify_bg(pgedit_back, GTK_STATE_NORMAL, &frames);
+
+#if PLAYER_ON_TOP == 1
+        gtk_window_set_keep_above (GTK_WINDOW(window), TRUE); // optional
+#endif
+
+        gtk_widget_show_all(window);
+        gtk_widget_hide(egg_image);
+
+        gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+
+//        gtk_window_resize(GTK_WINDOW(window), 400,400);
+
+//      gtk_window_move(GTK_WINDOW(window), 0, 0);
+
+//      gtk_window_resize(GTK_WINDOW(pgm_window), 299,300);
+
+//-----------------------------
+// load main panel title text
+//-----------------------------
+
+                {
+                char tmp[2048];
+                sprintf(tmp, "%s/title.txt", Code_Home);
+                s1 = fopen(tmp, "r");
+                if (s1) {
+                        fgets(tmp, 100, s1);
+                        tmp[strlen(tmp)-1] = 0;
+                        gtk_label_set_text(GTK_LABEL(sgrStudio), tmp);
+                        fclose(s1);
+                        }
+                }
+
+
+//------------------------------------------------------------
+//      enable window display - placement of this is important
+//------------------------------------------------------------
+
+        gtk_widget_show_all(window);
+
+	GtkTargetEntry targs[1] = {"target5", GTK_TARGET_SAME_APP, 1};
+
+//        gtk_drag_source_set(GTK_WIDGET(entry1), GDK_BUTTON1_MASK, targs,
+//                1, GDK_ACTION_COPY);
+
+//        gtk_drag_dest_set(GTK_WIDGET(entry1), GTK_DEST_DEFAULT_ALL, targs,
+//                1, GDK_ACTION_COPY);
+
+        gtk_widget_hide(egg_image);
+
+	{
+		GdkColor txtcolor;
+        	txtcolor.red       = 0x0000;
+        	txtcolor.green     = 0x0000;
+        	txtcolor.blue      = 0x0000;
+		gtk_color_button_set_color (GTK_COLOR_BUTTON(text_color), &txtcolor);
+        	txtcolor.red       = 0xffff;
+        	txtcolor.green     = 0xffff;
+        	txtcolor.blue      = 0xffff;
+		gtk_color_button_set_color (GTK_COLOR_BUTTON(back_color), &txtcolor);
+		}
+
+	no_move = 1;
+
+#if WSL2 == 0
+	gtk_window_move(GTK_WINDOW(window), 94, 0);
+#else
+	gtk_window_move(GTK_WINDOW(window), 45, 24); // windows misaligns linux windows
+//	gtk_widget_hide(monochrome); // filter not working
+//	gtk_widget_hide(insert_text); // filter not working
+#endif
+
+	gtk_widget_show(text_frame);
+
+        gtk_window_set_keep_above (GTK_WINDOW(text_frame), TRUE); 
+
+	gtk_widget_hide(run_result);
+	gtk_widget_hide(text_fixed);
+	gtk_widget_hide(text_frame);
+
+
+
+gtk_file_chooser_set_preview_widget_active ( GTK_FILE_CHOOSER(choose1), FALSE);
+
+gtk_file_chooser_set_action ( GTK_FILE_CHOOSER(dir_chooser), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+//GtkWidget *  toggle = gtk_button_new_with_label ("Open file read-only");
+//  gtk_widget_show (toggle);
+//  gtk_file_chooser_set_extra_widget (dir_chooser, toggle);
+
+char *p = getenv("HOME");
+gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER(dir_chooser), p);
+
+// gtk_file_dir_chooser_set_current_folder ( GTK_FILE_CHOOSER(dir_chooser), Music_Home_Directory);
+
+	gtk_label_set_text (dir_label, Music_Home_Directory);
+
+        gtk_widget_hide(frame_image);
+
+        gdouble x = (int) gtk_adjustment_get_value(adjustment20);
+
+        gtk_adjustment_set_step_increment (adjustment6, x);
+        gtk_adjustment_set_step_increment (adjustment7, x);
+        gtk_adjustment_set_step_increment (adjustment54, x);
+        gtk_adjustment_set_step_increment (adjustment40, x);
+
+	main_vu();
+
+	gtk_widget_hide(draw1);
+	gtk_widget_show(draw2);
+
+        gtk_widget_hide(flbl1);
+        gtk_widget_hide(flbl2);
+        gtk_widget_hide(flbl3);
+        gtk_widget_hide(flbl4);
+
+        gtk_widget_hide(sel1);
+        gtk_widget_hide(sel2);
+        gtk_widget_hide(sel3);
+        gtk_widget_hide(sel4);
+
+        gtk_widget_hide(esel1);
+        gtk_widget_hide(esel2);
+        gtk_widget_hide(esel3);
+        gtk_widget_hide(esel4);
+
+        gtk_widget_hide(frame_image1);
+        gtk_widget_hide(frame_image2);
+        gtk_widget_hide(frame_image3);
+        gtk_widget_hide(frame_image4);
+
+	gtk_widget_hide(dismiss_zippy_says); 
+
+	mouse_ul_x = -1;
+
+//-----------------------------------------------------
+//	From here on, it's all callbacks - main loop
+//-----------------------------------------------------
+
+	gtk_main(); // here we go!
+
+	return EXIT_SUCCESS; // bye-bye
+	}
+

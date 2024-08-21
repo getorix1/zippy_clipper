@@ -1,0 +1,369 @@
+SHELL := /bin/bash # Use bash syntax
+#*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2023, 2024
+#+      by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+#	August 11, 2024
+#	config_date = @config_date@
+
+#	/usr/lib/pkgconfig
+#	/usr/lib/x86_64-linux-gnu/pkgconfig
+
+SHELL := /bin/bash # Use bash syntax
+
+COM=sgv-code/common
+LIN=sgv-code/linux-code
+ENC=sgv-code/ScreenEncoder
+
+# -w -Wfatal-errors
+
+DEP =	sgv-code/common/common-externs.h \
+	sgv-code/common/common-fcn-headers.h \
+	sgv-code/common/common-widgets.h \
+	sgv-code/common/defines.h \
+	sgv-code/common/structures.h \
+	css/gtk.css \
+	sgv-code/common/common-widgets.h \
+	sgv-code/common/common-objects.h \
+	sgv-code/common/global-vars.h \
+	sgv-code/common/includes.h 
+
+
+#FLAGS = -fno-diagnostics-color -w -Wfatal-errors -Wno-format -O3 \
+
+FLAGS = -fno-diagnostics-color -w -Wfatal-errors -Wno-format  \
+	-Wno-deprecated-declarations -Wno-format-security \
+	-pthread \
+	`pkg-config --cflags --libs libvlc` \
+	@cairo_pkg@ \
+	@atk_pkg@ \
+	@gtk_pkg@ \
+	@gtkmm_pkg@ \
+	@gdkpixbuf_pkg@ \
+	@pango_pkg@ \
+	@fedora_avformat@ \
+	@glib_lib_pkg@ \
+	-DPLAYER \
+	-I sgv-code/ \
+	-I sgv-code/linux-code \
+	-I/usr/include/glib-2.0 \
+	-lm -lfftw3 -lavformat -lavcodec -lavutil -lavcodec \
+	-lpthread \
+	 -lpulse-mainloop-glib -lpulse  \
+	-lX11  \
+	-lvlccore \
+	-L/usr/lib/x86_64-linux-gnu/vlc/plugins/video_filter  \
+	-L/usr/lib/x86_64-linux-gnu/vlc/plugins/video_output  \
+	-L/usr/lib/x86_64-linux-gnu/vlc/plugins/video_splitter  \
+	-L/usr/lib/x86_64-linux-gnu/vlc/plugins/stream_out  \
+	-L/usr/lib/x86_64-linux-gnu/vlc/plugins/control  \
+	-L/usr/lib/x86_64-linux-gnu/vlc/plugins/audio_filter  \
+	-export-dynamic 
+
+all:	encoder-bin Zippy-bin
+
+encoder-bin:	eresource.o encoder.o
+	gcc -o encoder-bin encoder.o eresource.o $(FLAGS)
+
+eresource.o :	eresource.c  part1.glade
+	gcc -c eresource.c $(FLAGS) 
+
+eresource.c :	$(ENC)/eresource.xml part1.glade
+	glib-compile-resources --target=eresource.c --generate-source $(ENC)/eresource.xml
+
+encoder.o :	$(ENC)/encoder.c $(DEP)
+	gcc -c $(ENC)/encoder.c eresource.c $(FLAGS)
+
+Zippy-bin :	Zippy.o resource.o common-compiled-code.o vlc-interface.o playback-speed.o \
+		crop-control.o trim-clip.o edit-panel-scroll.o program-buttons.o file-type.o sort.o \
+		mhd-ref.o frame-mode.o media-probe.o play-check-box.o playclip.o hot-keys.o \
+		clip-from-still.o make-clip.o up-down-buttons.o probe-buttons.o play-buttons.o \
+		save-program.o dir-choose.o video-adj-panel.o rearrange-program.o zippy-says.o \
+		window-main-fcns.o media-playback.o file-stat.o load-program.o gettime.o main-timer.o \
+		tiled-clips.o clip-settings.o memory-alloc.o join-clips.o rotators.o playback-scrollbar.o \
+		file-choose.o negative.o edge-detect.o query-tooltip.o audio.o cut-paste-drag.o \
+		halt-program.o preview-run.o loop-stream.o \
+		adjust-video.o geo-test.o delete-dialog.o insert-text-dialog.o file-rename-dialog.o \
+		clip-speed.o vid-fmt-std.o scale-videos.o new-name.o reverse.o monochrome.o sharpen.o \
+		overlay.o audio-filters.o vumeter.o pulse.o gtk-code.o ff-run.o file-probe.o convert-mp4.o \
+		settings-dlg.o duplicate.o convert-mkv.o convert-webm.o convert-mov.o convert-gif.o stills.o \
+		ffmpeg-filter.o
+
+	gcc -o Zippy-bin Zippy.o common-compiled-code.o hot-keys.o playback-speed.o \
+		crop-control.o frame-mode.o rearrange-program.o vlc-interface.o program-buttons.o \
+		mhd-ref.o dir-choose.o edit-panel-scroll.o play-check-box.o playback-scrollbar.o \
+		window-main-fcns.o sort.o up-down-buttons.o probe-buttons.o play-buttons.o  \
+		trim-clip.o media-probe.o rotators.o file-type.o media-playback.o playclip.o \
+		clip-speed.o negative.o make-clip.o resource.o load-program.o gettime.o \
+		preview-run.o file-stat.o convert-mov.o \
+		clip-from-still.o vid-fmt-std.o scale-videos.o new-name.o reverse.o monochrome.o \
+		halt-program.o convert-webm.o \
+		convert-mkv.o duplicate.o save-program.o video-adj-panel.o sharpen.o zippy-says.o \
+		loop-stream.o tiled-clips.o clip-settings.o main-timer.o memory-alloc.o join-clips.o \
+		adjust-video.o geo-test.o delete-dialog.o insert-text-dialog.o file-rename-dialog.o \
+		settings-dlg.o overlay.o audio-filters.o vumeter.o pulse.o gtk-code.o ff-run.o \
+		convert-mp4.o stills.o file-probe.o convert-gif.o ffmpeg-filter.o \
+		file-choose.o edge-detect.o query-tooltip.o audio.o cut-paste-drag.o $(LFLAGS) $(FLAGS)
+
+resource.o : resource.c  Zippy.glade $(DEP) css/gtk.css
+	gcc -c resource.c $(FLAGS) 
+
+Zippy.o : Zippy.c $(DEP) resource.c
+	gcc -c Zippy.c $(FLAGS) 
+
+common-compiled-code.o : $(COM)/common-compiled-code.c $(DEP)
+	gcc -c $(COM)/common-compiled-code.c $(FLAGS) 
+
+zippy-says.o : $(COM)/zippy-says.c $(DEP)
+	gcc -c $(COM)/zippy-says.c $(FLAGS) 
+
+clip-settings.o : $(COM)/clip-settings.c $(DEP)
+	gcc -c $(COM)/clip-settings.c $(FLAGS) 
+
+playback-scrollbar.o : $(COM)/playback-scrollbar.c $(DEP)
+	gcc -c $(COM)/playback-scrollbar.c $(FLAGS) 
+
+join-clips.o : $(COM)/join-clips.c $(DEP)
+	gcc -c $(COM)/join-clips.c $(FLAGS) 
+
+preview-run.o : $(COM)/preview-run.c $(DEP)
+	gcc -c $(COM)/preview-run.c $(FLAGS) 
+
+stills.o : $(COM)/stills.c $(DEP)
+	gcc -c $(COM)/stills.c $(FLAGS) 
+
+halt-program.o : $(COM)/halt-program.c $(DEP)
+	gcc -c $(COM)/halt-program.c $(FLAGS) 
+
+ffmpeg-filter.o : $(COM)/ffmpeg-filter.c $(DEP)
+	gcc -c $(COM)/ffmpeg-filter.c $(FLAGS) 
+
+reverse.o : $(COM)/reverse.c $(DEP)
+	gcc -c $(COM)/reverse.c $(FLAGS) 
+
+settings-dlg.o : $(COM)/settings-dlg.c $(DEP)
+	gcc -c $(COM)/settings-dlg.c $(FLAGS) 
+
+duplicate.o : $(COM)/duplicate.c $(DEP)
+	gcc -c $(COM)/duplicate.c $(FLAGS) 
+
+convert-mp4.o : $(COM)/convert-mp4.c $(DEP)
+	gcc -c $(COM)/convert-mp4.c $(FLAGS) 
+
+convert-gif.o : $(COM)/convert-gif.c $(DEP)
+	gcc -c $(COM)/convert-gif.c $(FLAGS) 
+
+convert-mkv.o : $(COM)/convert-mkv.c $(DEP)
+	gcc -c $(COM)/convert-mkv.c $(FLAGS) 
+
+convert-mov.o : $(COM)/convert-mov.c $(DEP)
+	gcc -c $(COM)/convert-mov.c $(FLAGS) 
+
+convert-webm.o : $(COM)/convert-webm.c $(DEP)
+	gcc -c $(COM)/convert-webm.c $(FLAGS) 
+
+mhd-ref.o : $(COM)/mhd-ref.c $(DEP)
+	gcc -c $(COM)/mhd-ref.c $(FLAGS) 
+
+save-program.o : $(COM)/save-program.c $(DEP)
+	gcc -c $(COM)/save-program.c $(FLAGS) 
+
+dir-choose.o : $(COM)/dir-choose.c $(DEP)
+	gcc -c $(COM)/dir-choose.c $(FLAGS) 
+
+video-adj-panel.o : $(COM)/video-adj-panel.c $(DEP)
+	gcc -c $(COM)/video-adj-panel.c $(FLAGS) 
+
+overlay.o : $(COM)/overlay.c $(DEP)
+	gcc -c $(COM)/overlay.c $(FLAGS) 
+
+audio-filters.o : $(COM)/audio-filters.c $(DEP)
+	gcc -c $(COM)/audio-filters.c $(FLAGS) 
+
+vumeter.o : $(COM)/vumeter.c $(DEP)
+	gcc -c $(COM)/vumeter.c $(FLAGS) 
+
+pulse.o : $(COM)/pulse.c $(DEP)
+	gcc -c $(COM)/pulse.c $(FLAGS) 
+
+gtk-code.o : $(COM)/gtk-code.c $(DEP)
+	gcc -c $(COM)/gtk-code.c $(FLAGS) 
+
+ff-run.o : $(COM)/ff-run.c $(DEP)
+	gcc -c $(COM)/ff-run.c $(FLAGS) 
+
+file-probe.o : $(COM)/file-probe.c $(DEP)
+	gcc -c $(COM)/file-probe.c $(FLAGS) 
+
+clip-from-still.o : $(COM)/clip-from-still.c $(DEP)
+	gcc -c $(COM)/clip-from-still.c $(FLAGS) 
+
+vid-fmt-std.o : $(COM)/vid-fmt-std.c $(DEP)
+	gcc -c $(COM)/vid-fmt-std.c $(FLAGS) 
+
+scale-videos.o : $(COM)/scale-videos.c $(DEP)
+	gcc -c $(COM)/scale-videos.c $(FLAGS) 
+
+new-name.o : $(COM)/new-name.c $(DEP)
+	gcc -c $(COM)/new-name.c $(FLAGS) 
+
+monochrome.o : $(COM)/monochrome.c $(DEP)
+	gcc -c $(COM)/monochrome.c $(FLAGS) 
+
+clip-speed.o : $(COM)/clip-speed.c $(DEP)
+	gcc -c $(COM)/clip-speed.c $(FLAGS) 
+
+sharpen.o : $(COM)/sharpen.c $(DEP)
+	gcc -c $(COM)/sharpen.c $(FLAGS) 
+
+adjust-video.o : $(COM)/adjust-video.c $(DEP)
+	gcc -c $(COM)/adjust-video.c $(FLAGS) 
+
+geo-test.o : $(COM)/geo-test.c $(DEP)
+	gcc -c $(COM)/geo-test.c $(FLAGS) 
+
+delete-dialog.o : $(COM)/delete-dialog.c $(DEP)
+	gcc -c $(COM)/delete-dialog.c $(FLAGS) 
+
+insert-text-dialog.o : $(COM)/insert-text-dialog.c $(DEP)
+	gcc -c $(COM)/insert-text-dialog.c $(FLAGS) 
+
+file-rename-dialog.o : $(COM)/file-rename-dialog.c $(DEP)
+	gcc -c $(COM)/file-rename-dialog.c $(FLAGS) 
+
+file-choose.o : $(COM)/file-choose.c $(DEP)
+	gcc -c $(COM)/file-choose.c $(FLAGS) 
+
+negative.o : $(COM)/negative.c $(DEP)
+	gcc -c $(COM)/negative.c $(FLAGS) 
+
+edge-detect.o : $(COM)/edge-detect.c $(DEP)
+	gcc -c $(COM)/edge-detect.c $(FLAGS) 
+
+query-tooltip.o : $(COM)/query-tooltip.c $(DEP)
+	gcc -c $(COM)/query-tooltip.c $(FLAGS) 
+
+audio.o : $(COM)/audio.c $(DEP)
+	gcc -c $(COM)/audio.c $(FLAGS) 
+
+crop-control.o : $(COM)/crop-control.c $(DEP)
+	gcc -c $(COM)/crop-control.c $(FLAGS) 
+
+window-main-fcns.o : $(COM)/window-main-fcns.c $(DEP)
+	gcc -c $(COM)/window-main-fcns.c $(FLAGS) 
+
+cut-paste-drag.o : $(COM)/cut-paste-drag.c $(DEP)
+	gcc -c $(COM)/cut-paste-drag.c $(FLAGS) 
+
+loop-stream.o : $(COM)/loop-stream.c $(DEP)
+	gcc -c $(COM)/loop-stream.c $(FLAGS) 
+
+tiled-clips.o : $(COM)/tiled-clips.c $(DEP)
+	gcc -c $(COM)/tiled-clips.c $(FLAGS) 
+
+trim-clip.o : $(COM)/trim-clip.c $(DEP)
+	gcc -c $(COM)/trim-clip.c $(FLAGS) 
+
+make-clip.o : $(COM)/make-clip.c $(DEP)
+	gcc -c $(COM)/make-clip.c $(FLAGS) 
+
+playback-speed.o : $(COM)/playback-speed.c $(DEP)
+	gcc -c $(COM)/playback-speed.c $(FLAGS) 
+
+frame-mode.o : $(COM)/frame-mode.c $(DEP)
+	gcc -c $(COM)/frame-mode.c $(FLAGS) 
+
+hot-keys.o : $(COM)/hot-keys.c $(DEP)
+	gcc -c $(COM)/hot-keys.c $(FLAGS) 
+
+media-probe.o : $(COM)/media-probe.c $(DEP)
+	gcc -c $(COM)/media-probe.c $(FLAGS) 
+
+rotators.o : $(COM)/rotators.c $(DEP)
+	gcc -c $(COM)/rotators.c $(FLAGS) 
+
+memory-alloc.o : $(COM)/memory-alloc.c $(DEP)
+	gcc -c $(COM)/memory-alloc.c $(FLAGS) 
+
+main-timer.o : $(COM)/main-timer.c $(DEP)
+	gcc -c $(COM)/main-timer.c $(FLAGS) 
+
+load-program.o : $(COM)/load-program.c $(DEP)
+	gcc -c $(COM)/load-program.c $(FLAGS) 
+
+gettime.o : $(COM)/gettime.c $(DEP)
+	gcc -c $(COM)/gettime.c $(FLAGS) 
+
+file-type.o : $(COM)/file-type.c $(DEP)
+	gcc -c $(COM)/file-type.c $(FLAGS) 
+
+sort.o : $(COM)/sort.c $(DEP)
+	gcc -c $(COM)/sort.c $(FLAGS) 
+
+playclip.o : $(COM)/playclip.c $(DEP)
+	gcc -c $(COM)/playclip.c $(FLAGS) 
+
+program-buttons.o : $(COM)/program-buttons.c $(DEP)
+	gcc -c $(COM)/program-buttons.c $(FLAGS) 
+
+vlc-interface.o : $(COM)/vlc-interface.c $(DEP)
+	gcc -c $(COM)/vlc-interface.c $(FLAGS) 
+
+rearrange-program.o : $(COM)/rearrange-program.c $(DEP)
+	gcc -c $(COM)/rearrange-program.c $(FLAGS) 
+
+file-stat.o : $(COM)/file-stat.c $(DEP)
+	gcc -c $(COM)/file-stat.c $(FLAGS) 
+
+media-playback.o : $(COM)/media-playback.c $(DEP)
+	gcc -c $(COM)/media-playback.c $(FLAGS) 
+
+play-buttons.o : $(COM)/play-buttons.c $(DEP)
+	gcc -c $(COM)/play-buttons.c $(FLAGS) 
+
+probe-buttons.o : $(COM)/probe-buttons.c $(DEP)
+	gcc -c $(COM)/probe-buttons.c $(FLAGS) 
+
+up-down-buttons.o : $(COM)/up-down-buttons.c $(DEP)
+	gcc -c $(COM)/up-down-buttons.c $(FLAGS) 
+
+play-check-box.o : $(COM)/play-check-box.c $(DEP)
+	gcc -c $(COM)/play-check-box.c $(FLAGS) 
+
+edit-panel-scroll.o : $(COM)/edit-panel-scroll.c $(DEP)
+	gcc -c $(COM)/edit-panel-scroll.c $(FLAGS) 
+
+resource.c : resource.xml Zippy.glade css/gtk.css include/helpme.txt 
+	echo `grep WSL /proc/version` 
+	if test "`grep WSL /proc/version`" = ""; \
+	then cp icons/zippyed.png icons/zippylogo.png ; else cp icons/zippyed1.png icons/zippylogo.png; fi
+	glib-compile-resources --target=resource.c --generate-source resource.xml
+	glib-compile-resources resource.xml
+
+clean:
+
+	$(RM) *.o resource.c Zippy-bin program.lst

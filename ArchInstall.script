@@ -1,0 +1,114 @@
+#!/bin/bash
+
+# ------------------------------------------------------------------------------------------
+#
+# Internet Radio Automation & Encoding Toolkit
+# 
+# kc.okane@gmail.com
+# okane@cs.uni.edu
+# https://threadsafebooks.com/
+# https://www.cs.uni.edu/~okane
+# 
+# Copyright (C) 2019, 2023 by Kevin C. O'Kane
+# 
+# This program described herein is free software; you can redistribute it 
+# and/or modify it under the terms of the GNU General Public License as 
+# published by the Free Software Foundation; either version 2 of the 
+# License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT 
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along with 
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+# Place, Suite 330, Boston, MA  02111-1307  USA.
+# 
+# ------------------------------------------------------------------------------------------
+
+# March 4, 2023
+
+# This script is for Arch related systems.
+
+# This script can be used to install most of the software needed for the different
+# configurations found here. Much of this software may already be installed.
+# If a package is already installed, this script will not change it.
+# All packages are downloaded for your system's standard repositories.
+# 
+#
+# to run:
+#
+#	sudo ./install.script
+#
+# This will take some time to run and you will see many messages scroll by.
+# When it finishes, it will compile the code and run it.
+#
+
+        if [ `whoami` != "root" ]; then
+                echo
+                echo -------------------------------------------
+                echo "**** you must be root to run this script"
+                echo -------------------------------------------
+                echo
+                exit
+                fi
+
+        if [ -z `which pacman` ]; then
+                echo "pacman not found"
+                echo "pacman is required"
+                echo "The installation will only work on systems that use yum"
+                echo "halting ........"
+                echo
+                fi
+
+        if [ -z `which pamac` ]; then
+                echo "pamac not found"
+                echo "pamac is required"
+                echo "The installation will only work on systems that use yum"
+                echo "halting ........"
+                echo
+                fi
+
+        echo
+        echo "pacman found"
+
+pacman -F --refresh
+
+pacman -S --needed ffmpeg
+
+pacman -S --needed fftw
+
+pacman -S --needed gtk3
+
+pacman -S --needed pango
+
+pacman -S --needed glib2
+
+pacman -S --needed glibmm
+
+pacman -S --needed readline
+
+pacman -S --needed gstreamer
+
+# dnf -y install gtk3-devel gstreamer1-devel clutter-devel webkit2gtk3-devel libgda-devel gobject-introspection-devel
+
+# dnf -y install mpv.x86_64 
+
+pacman -S --needed vlc
+
+pacman -S --needed pulseaudio
+pacman -S --needed pulseaudio-alsa
+
+pacman -S --needed gcc
+pacman -S --needed gcc-libs
+
+pamac install --no-confirm autoconf
+pamac install --no-confirm webkit2gtk
+pamac install mpv --no-confirm
+pamac install gnome-terminal --no-confirm
+pamac install make --no-confirm
+pamac install pkg-config --no-confirm
+pamac install libreadline-dev
+
+
+exit
