@@ -1,0 +1,466 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	July 12, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+//-------------------------------------
+//        entry7  program list row 1
+//        entry8  program list row 2
+//        entry9  program list row 3
+//        entry10 program list row 4
+//        entry11 program list row 5
+//        entry12 program list row 6
+//        entry13 program list row 7
+//        entry14 program list row 8
+//        entry2  program list row 9
+//        entry3  program list row 10
+//        entry4  program list row 11
+//        entry15 program list row 12
+//-------------------------------------
+
+
+void    entry_insert(GtkEditable  *entry, gchar *edit) {
+
+        unsigned char *file;
+        int i = 0;
+
+        gtk_editable_delete_text (entry, 0, -1 );
+
+        i = strlen( (char *) edit);
+
+        file = (unsigned char *) malloc(i + 1);
+
+        if (file == NULL ) {
+                printf("Out of memory in entry_insert\n");
+                abort();
+                }
+
+        strcpy((char *) file, (char *) edit);
+
+        if (strncmp((char *)file, "file://", 7) == 0) 
+		strcpy((char *)edit, (char *)&file[7]);
+
+        else strcpy((char *)edit, (char *)file);
+
+        free (file);
+
+        return;
+        }
+
+
+
+void    paste1(int *Row) {
+
+        int i,j,playedo, id1=0, id2=0;
+
+        if (SP->scount+1 >= PROGRAM_MAX) {
+                Message("Maximum number of program slots exceeded");
+                return;
+                }
+
+        printf("copy to row %d copyClipRow=%d\n",*Row,copyClipRow);
+        if (copyClipRow >= 0 ) {
+                }
+        else {
+                }
+
+        for (i = SP->scount + 1; i > *Row; i--) {        // shift entries up one
+                strcpy(ProgramArray[i], ProgramArray[i - 1]);
+                programData[i]->play = programData[i - 1]->play;
+                programPlayed[i] = programPlayed[i-1];
+                programTime[i] = programTime[i-1];
+                }
+
+        if (copyClipRow == -10) {
+                strcpy(ProgramArray[*Row],top1);
+                }
+        if (copyClipRow == -20) {
+                strcpy(ProgramArray[*Row],top2);
+                }
+        if (copyClipRow == -30) {
+                strcpy(ProgramArray[*Row],top3);
+                }
+
+        programData[*Row]->play = 1;
+        programTime[*Row] = -1;
+        (SP->scount)++;
+
+        DisplayProgramButtons();
+        }
+
+
+
+//----------------------------
+//	entry changed1
+//----------------------------
+
+void	entry_changed1 (GtkEntry *entry, gchar *preedit, gpointer  user_data, int Row) {
+
+//--------------------------------------------------------------------
+//	Handles multiple paste inserts which appear as long strings
+//--------------------------------------------------------------------
+
+	char *file, *file1;
+	int i, k, m, flg, flg1 = 0;
+
+	i = gtk_entry_get_text_length (entry);
+
+	file = malloc (i + 9);
+
+	if (file == NULL) {
+		printf("Out of memory in entry_changed1\n");
+		abort();
+		}
+
+	file1 = malloc (i + 9);
+
+	if (file1 == NULL) {
+		printf("Out of memory in entry_changed1\n");
+		abort();
+		}
+
+	strcpy(file, gtk_entry_get_text(entry)); // get file name(s)
+
+again:	// multiple names in one string
+
+	flg1 = 0;
+	for(k = 0; file[k] != 0; k++) if (file[k] == '\n') {
+			flg1 = 1;
+			break;
+			}
+	file[k] = 0;
+
+	if (hexcleaner(file)) { }
+
+//-------------------------------------------------------------------------
+//	don't do filetype() on files that don't begin with / as this
+//	causes meaningless error messages to be generated.
+//-------------------------------------------------------------------------
+
+	if (file[0] == '/' && filetype(file) == DIR) {
+		char tmp[4096];
+		if (strlen(file) > 4000) return;
+		sprintf(tmp,"find \"%s\" -type f > /tmp/player.m3u", file);
+		system(tmp);
+		printf("Insert directory: %s\n", file);
+		strcpy(tmp, "/tmp/player.m3u");
+		LoadProgram(tmp);
+		return;
+		}
+
+//-------------------
+//	basename
+//-------------------
+
+	i = strlen(file);
+
+	flg = 0;
+
+	if (file[0] == '/') flg=1;
+	if (strncmp(file, "smb:", 4) == 0) flg=1;
+
+	for (i = strlen(file); i > 0; i--) if (file[i] == '/') break;
+
+	if (i > 0) strcpy(file1, &file[i + 1]);
+	else strcpy(file1, file);
+
+	if (flg) {
+		char tmp[1024], *p1;
+		FILE *f1;
+
+		strcpy(ProgramArray[Row], file);
+
+		programData[Row]->play = 1; // play it?
+		programPlayed[Row] = 0; // play count
+
+		file[i]=0;
+
+		for (i = strlen(file1); i > 0 && file1[i] != '.'; i--);
+
+		if (i == UNRECOGNIZED || i > 99) {
+			strcpy(file,"Bad File Type");
+			}
+
+		else {
+			if (i == 7 || i == 8) file1[strlen(file1) - 5] = 0; // filetype ending removal
+			else file1[strlen(file1) - 4] = 0;
+			gtk_entry_set_text (GTK_ENTRY(entry), (gchar *) file1);
+			while (gtk_events_pending ()) gtk_main_iteration ();
+			}
+		}
+
+	if ( !flg1 ) goto end;
+
+	if (! strlen(file)) goto end;
+
+	strcpy(file1, &file[k + 1]);
+
+	strcpy(file, file1);
+	for (m = 0; file[m] != 0; m++) if (file[m] == '\n') break;
+	if (file[m] == 0) goto end; // last row
+	paste1(&Row);
+
+	flg1=0;
+
+	if (strncmp(file, "file://", 7) == 0) {
+		strcpy(file1, &file[7]);
+		strcpy(file, file1);
+		}
+
+	if (strlen(file)) {
+		goto again;
+		}
+
+end:
+	free (file);
+	free (file1);
+	}
+
+
+// -------------------------------------------------
+//	bottom 12 rows of edit panel cut and paste
+// -------------------------------------------------
+
+void	paste(int *Row) {
+
+	int i,j,played,playtime, play;
+	char time[32],file[512];
+
+	if (strlen(cutRow)) {
+		paste1(Row);
+		strcpy(ProgramArray[*Row], cutRow);
+		programData[*Row]->play = cutPlay;
+		programPlayed[*Row] = cutPlayed;
+		strcpy(cutRow,"");
+		DisplayProgramButtons();
+		return;
+		}
+
+	if (*Row == copyClipRow) {
+		Message("Copy to same row");
+		return;
+		}
+
+	if (copyClipRow < 0 ) {
+		paste1(Row);
+		return;
+		}
+
+	if (SP->scount + 1 >= PROGRAM_MAX) {
+		Message("Maximum number of program slots exceeded");
+		return;
+		}
+
+	printf("paste() from copyClipRow = %d  to Row = %d scount = %d\n", 
+		copyClipRow, *Row, SP->scount ) ;
+
+	strcpy(file, ProgramArray[copyClipRow]);
+	play = programData[copyClipRow]->play;
+	played = programPlayed[copyClipRow];
+	playtime = programTime[copyClipRow];
+
+	delRow(copyClipRow);
+
+	for (i = SP->scount + 1; i > *Row; i--) {        // shift entries up one
+		strcpy(ProgramArray[i], ProgramArray[i - 1]);
+		programData[i]->play = programData[i - 1]->play;
+		programPlayed[i] = programPlayed[i - 1];
+		programTime[i] = programTime[i - 1];
+		}
+
+	strcpy(ProgramArray[*Row], file);   // insert new entry
+	programData[*Row]->play = play;
+	programPlayed[*Row] = played;
+	programTime[*Row] = playtime;
+	(SP->scount)++;
+	DisplayProgramButtons();
+	copyClipRow = -1;
+
+
+	}
+
+void    on_entry7_drag_data_get(GtkEntry *e)    {
+        copyClipRow = e7Row;
+        }
+void    on_entry8_drag_data_get(GtkEntry *e)    {
+        copyClipRow = e8Row;
+        }
+void    on_entry9_drag_data_get(GtkEntry *e)    {
+        copyClipRow = e9Row;
+        }
+void    on_entry10_drag_data_get(GtkEntry *e)   {
+        copyClipRow = e10Row;
+        }
+void    on_entry11_drag_data_get(GtkEntry *e)   {
+        copyClipRow = e11Row;
+        }
+void    on_entry12_drag_data_get(GtkEntry *e)   {
+        copyClipRow = e12Row;
+        }
+void    on_entry13_drag_data_get(GtkEntry *e)   {
+        copyClipRow = e13Row;
+        }
+void    on_entry14_drag_data_get(GtkEntry *e)   {
+        copyClipRow = e14Row;
+        }
+void    on_entry2_drag_data_get(GtkEntry *e)    {
+        copyClipRow = e2Row;
+        }
+void    on_entry3_drag_data_get(GtkEntry *e)    {
+        copyClipRow = e3Row;
+        }
+void    on_entry4_drag_data_get(GtkEntry *e)    {
+        copyClipRow = e4Row;
+        }
+void    on_entry15_drag_data_get(GtkEntry *e)   {
+        copyClipRow = e15Row;
+        }
+
+//---------------------------------------------------------------------------------------------------------------
+//      on_entry*_copy_clipboard - copy entry as in ^c
+//---------------------------------------------------------------------------------------------------------------
+
+#define ENTRY_COPY_CLIPBOARD(NBR) \
+        void on_entry## NBR ##_copy_clipboard(GtkEntry  *e) { \
+	        copyClipRow=e## NBR ##Row; }
+
+        ENTRY_COPY_CLIPBOARD(2)  ENTRY_COPY_CLIPBOARD(3)  ENTRY_COPY_CLIPBOARD(4)
+        ENTRY_COPY_CLIPBOARD(7)  ENTRY_COPY_CLIPBOARD(8)  ENTRY_COPY_CLIPBOARD(9)
+        ENTRY_COPY_CLIPBOARD(10) ENTRY_COPY_CLIPBOARD(11) ENTRY_COPY_CLIPBOARD(12)
+        ENTRY_COPY_CLIPBOARD(13) ENTRY_COPY_CLIPBOARD(14) ENTRY_COPY_CLIPBOARD(15)
+
+//-------------------------------------------------------------------------------
+//      on_entry*_insert_text
+//-------------------------------------------------------------------------------
+
+#define ENTRY_INSERT(NBR) \
+        void on_entry## NBR ##_insert_text(GtkEditable  *entry, gchar *edit) { \
+	        int i = gtk_entry_get_text_length (GTK_ENTRY(entry)); \
+        	if (i > STR_MAX) { Message("Entry Error"); return; } \
+		entry_insert(entry, edit); }
+
+        ENTRY_INSERT(3)  ENTRY_INSERT(4)  ENTRY_INSERT(2)
+        ENTRY_INSERT(7)  ENTRY_INSERT(8)  ENTRY_INSERT(9)
+        ENTRY_INSERT(10) ENTRY_INSERT(11) ENTRY_INSERT(12)
+        ENTRY_INSERT(13) ENTRY_INSERT(14) ENTRY_INSERT(15)
+
+//-----------------------------------------------------------------------------------
+//      on_entry*_changed
+//-----------------------------------------------------------------------------------
+
+#define ENTRY_CHANGED(NBR) \
+        void on_entry## NBR ##_changed(GtkEntry  *entry, gchar *preedit, \
+                	gpointer user_data, GtkButton *b) { \
+        	entry_changed1(entry, preedit, user_data, e## NBR ##Row); \
+		}
+
+        ENTRY_CHANGED(2)  ENTRY_CHANGED(3)  ENTRY_CHANGED(4)
+        ENTRY_CHANGED(7)  ENTRY_CHANGED(8)  ENTRY_CHANGED(9)
+        ENTRY_CHANGED(10) ENTRY_CHANGED(11) ENTRY_CHANGED(12)
+        ENTRY_CHANGED(13) ENTRY_CHANGED(14) ENTRY_CHANGED(15)
+
+//------------------------------------------------------------------------------
+//      on_entry*_button_press_event
+//
+//	return TRUE to stop further sig processing; to continue sig processing.
+//	button 1 left; button 3 right.
+//------------------------------------------------------------------------------
+
+#define ENTRY_BUTTON_PRESS_EVENT(NBR) \
+        gboolean on_entry## NBR ##_button_press_event(GtkEntry  *entry, GdkEventButton *event) { \
+		if (event->button == 1) { \
+			gtk_editable_select_region (GTK_EDITABLE(entry), 0, -1); \
+			return FALSE; } /* right click */ \
+                char tmp[16000]; strcpy(tmp, ProgramArray[e## NBR ##Row]); \
+		file_name_rename(tmp);  \
+                return TRUE; \
+                }
+
+        ENTRY_BUTTON_PRESS_EVENT(7)  ENTRY_BUTTON_PRESS_EVENT(8)  ENTRY_BUTTON_PRESS_EVENT(9)
+        ENTRY_BUTTON_PRESS_EVENT(10) ENTRY_BUTTON_PRESS_EVENT(11) ENTRY_BUTTON_PRESS_EVENT(12)
+        ENTRY_BUTTON_PRESS_EVENT(13) ENTRY_BUTTON_PRESS_EVENT(14) ENTRY_BUTTON_PRESS_EVENT(2)
+        ENTRY_BUTTON_PRESS_EVENT(3)  ENTRY_BUTTON_PRESS_EVENT(4)  ENTRY_BUTTON_PRESS_EVENT(15)
+
+//----------------------------------------------------------------
+//      on_entry*_cut_clipboard - from entry as in ^x
+//----------------------------------------------------------------
+
+#define ENTRY_CUT_CLIPBOARD(NBR) \
+        void on_entry## NBR ##_cut_clipboard(GtkEntry  *b) { \
+                strcpy(cutRow, ProgramArray[e## NBR ##Row]); \
+                cutPlay = programData[e## NBR ##Row]->play; \
+                cutPlayed = programPlayed[e## NBR ##Row]; \
+                delRow(e## NBR ##Row); \
+                DisplayProgramButtons(); \
+                }
+
+        ENTRY_CUT_CLIPBOARD(2)  ENTRY_CUT_CLIPBOARD(3)  ENTRY_CUT_CLIPBOARD(4)
+        ENTRY_CUT_CLIPBOARD(7)  ENTRY_CUT_CLIPBOARD(8)  ENTRY_CUT_CLIPBOARD(9)
+        ENTRY_CUT_CLIPBOARD(10) ENTRY_CUT_CLIPBOARD(11) ENTRY_CUT_CLIPBOARD(12)
+        ENTRY_CUT_CLIPBOARD(13) ENTRY_CUT_CLIPBOARD(14) ENTRY_CUT_CLIPBOARD(15)
+
+//-------------------------------------------------------------------------------------------
+//      on_entry*_paste_clipboard - paste into entry as in ^v
+//-------------------------------------------------------------------------------------------
+
+#define ENTRY_PASTE_CLIPBOARD(NBR) \
+        void on_entry## NBR ##_paste_clipboard(GtkEntry  *b) { paste( &e## NBR ##Row ); }
+
+        ENTRY_PASTE_CLIPBOARD(2)  ENTRY_PASTE_CLIPBOARD(3)  ENTRY_PASTE_CLIPBOARD(4)
+        ENTRY_PASTE_CLIPBOARD(7)  ENTRY_PASTE_CLIPBOARD(8)  ENTRY_PASTE_CLIPBOARD(9)
+        ENTRY_PASTE_CLIPBOARD(10) ENTRY_PASTE_CLIPBOARD(11) ENTRY_PASTE_CLIPBOARD(12)
+        ENTRY_PASTE_CLIPBOARD(13) ENTRY_PASTE_CLIPBOARD(14) ENTRY_PASTE_CLIPBOARD(15)
+
+//------------------------------------------------------------------------
+//      on_entry*_drag_data_received - draging from one line to another
+//------------------------------------------------------------------------
+
+#define ENTRY_DRAG_DATA_RECEIVED(NBR) \
+        void on_entry## NBR ##_drag_data_received (GtkWidget  *b) { \
+		if (copyClipRow >= 0 ) { paste(&e## NBR ##Row); } \
+                else { paste1(&e## NBR ##Row); } \
+                }
+
+        ENTRY_DRAG_DATA_RECEIVED(2)  ENTRY_DRAG_DATA_RECEIVED(3)  ENTRY_DRAG_DATA_RECEIVED(4)
+        ENTRY_DRAG_DATA_RECEIVED(7)  ENTRY_DRAG_DATA_RECEIVED(8)  ENTRY_DRAG_DATA_RECEIVED(9)
+        ENTRY_DRAG_DATA_RECEIVED(10) ENTRY_DRAG_DATA_RECEIVED(11) ENTRY_DRAG_DATA_RECEIVED(12)
+        ENTRY_DRAG_DATA_RECEIVED(13) ENTRY_DRAG_DATA_RECEIVED(14) ENTRY_DRAG_DATA_RECEIVED(15)
+

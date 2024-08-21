@@ -1,0 +1,336 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	July 13, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+//---------------------------------------------------------------------------------------------
+//	libvlc_video_set_crop_border is missing in libvlc version 3 but present in version 4
+//	libvlc_video_set_crop_border(mediaPlayer, 111,111,111,111); does not exist in vwersion 3
+//	libvlc_video_set_crop_window(mediaPlayer, 111,111,111,111); does not exist in vwersion 3
+//---------------------------------------------------------------------------------------------
+
+gboolean on_drawV1_button_press_event(GtkEntry  *entry, GdkEventButton *event) {
+
+	gtk_widget_get_pointer ( drawV1, &mouse_ul_x, &mouse_ul_y);
+//	printf( "UL mouse pointer: x=%d y=%d\n", mouse_ul_x, mouse_ul_y);
+	return TRUE;
+
+	}
+
+gboolean on_drawV1_draw(GtkWidget* self, cairo_t* cr) {
+
+	if (mouse_ul_x < 0) return TRUE;
+
+	int width, height;
+
+	width = abs(mouse_lr_x - mouse_ul_x);
+	height = abs(mouse_lr_y - mouse_ul_y);
+
+	cairo_set_source_rgb(cr, 0.99, 0.2, 0.2);
+	cairo_set_line_width(cr, 4);
+
+	cairo_rectangle(cr, mouse_ul_x, mouse_ul_y, width, height);
+
+//	cairo_set_line_width(cr, 2);
+//	cairo_rectangle(cr, 0, 0, 998, 722);
+
+//	cairo_fill(cr);
+	cairo_stroke(cr);
+
+
+	return TRUE;
+	}
+
+gboolean on_drawV1_button_release_event(GtkEntry  *entry, GdkEventButton *event) {
+
+	gtk_widget_get_pointer ( drawV1, &mouse_lr_x, &mouse_lr_y);
+
+	GtkAllocation a;
+	gtk_widget_get_allocation (frame_image, &a);
+
+	mouse_ul_y += 30;
+	mouse_lr_y += 30;
+
+	double x, y;
+
+//---------------
+//	RIGHT
+//---------------
+
+	x = ((a.x + a.width) - mouse_lr_x) ;
+	x = x * ( (double) frame_width/a.width);
+
+	gtk_spin_button_set_value (crop_right, x );
+// 	while (gtk_events_pending()) gtk_main_iteration();
+
+//---------------
+//	BOTTOM
+//---------------
+
+	y = ((a.y + a.height) - mouse_lr_y) ;
+	y = y * ( (double) frame_height/a.height);
+
+	gtk_spin_button_set_value (crop_bottom, y);
+//	while (gtk_events_pending()) gtk_main_iteration();
+
+//---------------
+//	TOP
+//---------------
+
+	y = (mouse_ul_y - a.y) ;
+	y = y * ( (double) frame_height/a.height);
+
+	gtk_spin_button_set_value (crop_top, y);
+//	while (gtk_events_pending()) gtk_main_iteration();
+
+//---------------
+//	LEFT
+//---------------
+
+	x = (mouse_ul_x - a.x) ;
+	x = x * ( (double) frame_width/a.width);
+
+	gtk_spin_button_set_value (crop_left, x);
+	while (gtk_events_pending()) gtk_main_iteration();
+
+	mouse_ul_x = -1;
+
+	gtk_widget_queue_draw (drawV1);
+
+	mouse_ul_x = -1;
+        return TRUE;
+        }
+
+
+gboolean on_drawV1_motion_notify_event (GdkEventMotion event) {
+	if (mouse_ul_x < 0 ) return TRUE;
+	gtk_widget_get_pointer ( drawV1, &mouse_lr_x, &mouse_lr_y);
+	gtk_widget_queue_draw (drawV1);
+	return TRUE;
+	}
+
+
+void    on_crop_left_value_changed( GtkSpinButton *s, GtkScrollType scr) {
+
+	if (!mediaPlayer) return;
+
+	if (rotation != 0) {
+		zippy_says("Cropping not supported on cell phone rotations other than 0.\n");
+		return;
+		}
+
+	gdouble x = (int) gtk_adjustment_get_value(adjustment6);
+
+	if ((int) x > frame_width - 10) {
+		gtk_adjustment_set_value(adjustment6, (gdouble) (frame_width - 10));
+		return;
+		}
+
+	cropLeft = x;
+
+        int rslt = libvlc_video_get_size (mediaPlayer, 0, &frame_width, &frame_height);
+
+	if ((int) cropLeft > frame_width) cropLeft = frame_width;
+
+	gtk_spin_button_set_value (s, x);
+	while (gtk_events_pending()) gtk_main_iteration();
+
+	if (gtk_toggle_button_get_active(frame_next)) {
+		frame_move();
+		frame_display(); 
+		}
+
+#ifdef VLC4
+//	libvlc_video_set_crop_window(mediaPlayer, cropLeft, cropTop, cropRight-cropLeft, cropBottom-cropTop);
+	libvlc_video_set_crop_border(mediaPlayer, cropLeft, cropRight, cropTop, cropBottom);
+#else
+	char tmp[64];
+	sprintf(tmp, "%d+%d+%d+%d", (int) cropLeft, (int) cropTop, 
+		(int) cropRight, (int) cropBottom);
+	libvlc_video_set_crop_geometry(mediaPlayer, tmp);
+#endif
+
+        }
+
+
+void    on_crop_right_value_changed( GtkSpinButton *s, GtkScrollType scr) {
+
+        if (!mediaPlayer) return;
+
+	if (rotation != 0) {
+		zippy_says("Cropping not supported on cell phone rotations other than 0.\n");
+		return;
+		}
+
+        gdouble x = (int) gtk_adjustment_get_value(adjustment7);
+
+        if ((int) x > frame_width - 10) {
+                gtk_adjustment_set_value(adjustment7, (gdouble) (frame_width - 10));
+                return;
+                }
+
+        cropRight = x;
+
+        int rslt = libvlc_video_get_size (mediaPlayer, 0, &frame_width, &frame_height);
+
+        if ((int) cropRight > frame_width) cropRight = frame_width;
+
+
+        gtk_spin_button_set_value (s, x);
+        while (gtk_events_pending()) gtk_main_iteration();
+
+        if (gtk_toggle_button_get_active(frame_next)) {
+                frame_move();
+                frame_display();
+                }
+
+
+#ifdef VLC4
+//      libvlc_video_set_crop_window(mediaPlayer, cropLeft, cropTop, cropRight-cropLeft, cropBottom-cropTop);
+        libvlc_video_set_crop_border(mediaPlayer, cropLeft, cropRight, cropTop, cropBottom);
+#else
+        char tmp[64];
+        sprintf(tmp, "%d+%d+%d+%d", (int) cropLeft, (int) cropTop,
+                (int) cropRight, (int) cropBottom);
+        libvlc_video_set_crop_geometry(mediaPlayer, tmp);
+#endif
+
+        }
+
+void    on_crop_top_value_changed( GtkSpinButton *s, GtkScrollType scr) {
+
+        if (!mediaPlayer) return;
+
+	if (rotation != 0) {
+		zippy_says("Cropping not supported on cell phone rotations other than 0.\n");
+		return;
+		}
+
+        gdouble x = (int) gtk_adjustment_get_value(adjustment40);
+
+        if ((int) x > frame_height - 10) {
+                gtk_adjustment_set_value(adjustment40, (gdouble) (frame_height - 10));
+                return;
+                }
+
+        cropTop = x;
+
+        int rslt = libvlc_video_get_size (mediaPlayer, 0, &frame_width, &frame_height);
+
+        if ((int) cropTop > frame_height) cropTop = frame_height;
+
+        gtk_spin_button_set_value (s, x);
+        while (gtk_events_pending()) gtk_main_iteration();
+
+        if (gtk_toggle_button_get_active(frame_next)) {
+                frame_move();
+                frame_display();
+                }
+
+
+#ifdef VLC4
+//      libvlc_video_set_crop_window(mediaPlayer, cropLeft, cropTop, cropRight-cropLeft, cropBottom-cropTop);
+        libvlc_video_set_crop_border(mediaPlayer, cropLeft, cropRight, cropTop, cropBottom);
+#else
+        char tmp[64];
+        sprintf(tmp, "%d+%d+%d+%d", (int) cropLeft, (int) cropTop,
+                (int) cropRight, (int) cropBottom);
+        libvlc_video_set_crop_geometry(mediaPlayer, tmp);
+#endif
+
+        }
+
+
+void    on_crop_bottom_value_changed( GtkSpinButton *s, GtkScrollType scr) {
+
+        if (!mediaPlayer) return;
+
+	if (rotation != 0) {
+		zippy_says("Cropping not supported on cell phone rotations other than 0.\n");
+		return;
+		}
+
+        gdouble x = (int) gtk_adjustment_get_value(adjustment54);
+
+        if ((int) x > frame_height - 10) {
+                gtk_adjustment_set_value(adjustment54, (gdouble) (frame_height - 10));
+                return;
+                }
+
+        cropBottom = x;
+
+        int rslt = libvlc_video_get_size (mediaPlayer, 0, &frame_width, &frame_height);
+
+        if ((int) cropTop > frame_height) cropBottom = frame_height;
+
+        gtk_spin_button_set_value (s, x);
+        while (gtk_events_pending()) gtk_main_iteration();
+
+        if (gtk_toggle_button_get_active(frame_next)) {
+                frame_move();
+                frame_display();
+                }
+
+#ifdef VLC4
+//      libvlc_video_set_crop_window(mediaPlayer, cropLeft, cropTop, cropRight-cropLeft, cropBottom-cropTop);
+        libvlc_video_set_crop_border(mediaPlayer, cropLeft, cropRight, cropTop, cropBottom);
+#else
+        char tmp[64];
+        sprintf(tmp, "%d+%d+%d+%d", (int) cropLeft, (int) cropTop,
+                (int) cropRight, (int) cropBottom);
+        libvlc_video_set_crop_geometry(mediaPlayer, tmp);
+#endif
+	}
+
+
+void	on_crop_reset_clicked(GtkWidget *w) {
+
+	cropLeft = 0.0; 
+	cropTop = 0.0;
+	cropRight = 0.0; 
+	cropBottom = 0.0;
+
+	gtk_adjustment_set_value (adjustment40, 0.0);
+	gtk_adjustment_set_value (adjustment54, 0.0);
+	gtk_adjustment_set_value (adjustment6, 0.0);
+	gtk_adjustment_set_value (adjustment7, 0.0);
+
+	}
+

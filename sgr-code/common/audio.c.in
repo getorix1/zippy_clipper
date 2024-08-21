@@ -1,0 +1,323 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Feb 7, 2023
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+
+void	on_strip_audio_clicked(GtkWidget *w) {
+
+	char tmp[16000], filename[4096], filetype[256];
+	time_t tmark = time(0);
+	int i, j, k, pcount = 0;
+
+	close_boxes();
+
+	for (i = 0; i < (SP->scount); i++) {
+
+		if (programData[i]->play) {
+
+			programData[i]->play = 0;
+
+			pcount++;
+
+			new_name(filename, ProgramArray[i], "noaud");
+
+			sprintf(tmp, "ffmpeg -y -loglevel info -i \"%s\" -c copy -an \"%s\"",
+                		ProgramArray[i], filename);
+
+			int err_stat = ff_run("Strip", tmp, i);
+
+			if (err_stat != 0) {
+				zippy_says("An error occurred\n");
+				sprintf(tmp, "rm \"%s\"\n", filename);
+				system(filename);
+				return;
+				}
+
+			printf("Created: %s\n\n", filename);
+
+			}
+		}
+
+
+	if (!pcount) {
+		zippy_says("No files selected.\n");
+		}
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+        clear_play();
+
+        on_scan_video_dir_clicked(NULL);
+
+	}
+
+
+void	on_null_audio_clicked(GtkWidget *w) {
+
+	char tmp[16000], filename[4096], filetype[256];
+	time_t tmark = time(0);
+	int i, j, k, pcount = 0;
+
+	close_boxes();
+
+	for (i = 0; i < (SP->scount); i++) {
+
+		if (programData[i]->play) {
+
+			programData[i]->play = 0;
+
+			pcount++;
+
+			new_name(filename, ProgramArray[i], "nul44");
+
+			sprintf(tmp, "ffmpeg -y -loglevel info "
+				"-f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 "
+				"-i \"%s\" "
+				"-c:v copy -c:a aac -map 0:a -map 1:v -shortest \"%s\"",
+                		ProgramArray[i], filename);
+
+			int err_stat = ff_run("Null Audio 44.1", tmp, i);
+
+		if (err_stat != 0) {
+			zippy_says("An error occurred\n");
+			sprintf(tmp, "rm \"%s\"", filename);
+			system(tmp);
+			return;
+			}
+
+			printf("Created: %s\n\n", filename);
+
+			char tmp1[16000];
+			sprintf(tmp1, "Created: %s\n", filename);
+			zippy_says(tmp1);
+
+
+			}
+		}
+
+
+	if (!pcount) {
+		zippy_says("No files selected.\n");
+		}
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+        clear_play();
+
+        on_scan_video_dir_clicked(NULL);
+
+	}
+
+
+void	on_null_audio_48000_clicked(GtkWidget *w) {
+
+	char tmp[16000], filename[4096], filetype[256];
+	time_t tmark = time(0);
+	int i, j, k, pcount = 0;
+
+	close_boxes();
+
+	for (i = 0; i < (SP->scount); i++) {
+
+		if (programData[i]->play) {
+
+			programData[i]->play = 0;
+
+			pcount++;
+
+			new_name(filename, ProgramArray[i], "nul48");
+
+			sprintf(tmp, "ffmpeg -y -loglevel info "
+				"-f lavfi -i anullsrc=channel_layout=stereo:sample_rate=48000 "
+				"-i \"%s\" "
+				"-c:v copy -c:a aac -map 0:a -map 1:v -shortest \"%s\"",
+                		ProgramArray[i], filename);
+
+			int err_stat = ff_run("Null audio 48", tmp, i);
+
+		if (err_stat != 0) {
+			zippy_says("An error occurred\n");
+			sprintf(tmp, "rm \"%s\"", filename);
+			system(tmp);
+			return;
+			}
+
+			printf("Created: %s\n\n", filename);
+
+			}
+		}
+
+
+	if (!pcount) {
+		zippy_says("No files selected.\n");
+		}
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+        clear_play();
+
+        on_scan_video_dir_clicked(NULL);
+
+	}
+
+
+void	on_add_audio_clicked(GtkWidget *w) {
+
+        if (SP->scount < 1) {
+		zippy_says("Empty entry box list\n");
+		return;
+		}
+
+	close_boxes();
+
+	int i, pcount = 0, first = -1, second = -1;
+
+        for (i = 0; i< SP->scount; i++) {
+                if (programData[i]->play) {
+                	pcount++;
+			if (pcount == 1) first = i;
+			if (pcount == 2 ) {
+				second = i;
+				break;
+				}
+			}
+		}
+
+	if (pcount < 2) {
+		zippy_says("Not enough checked boxes\n");
+		return;
+		}
+
+	char tmp[16000], new[4096];
+
+	new_name(new, ProgramArray[first], "audio");
+
+	sprintf(tmp, "ffmpeg -y -loglevel info -i \"%s\" -i \"%s\" -map 0:v -map 1:a "
+		"-c:v copy -shortest \"%s\"",
+		ProgramArray[first], ProgramArray[second], new);
+
+	int err_stat = ff_run("Add audio", tmp, first);
+
+	if (err_stat != 0) {
+		zippy_says("An error occurred\n");
+		sprintf(tmp, "rm \"%s\"", new);
+		system(tmp);
+		return;
+		}
+
+	zippy_says("Audio track added/replaced.\n");
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+        clear_play();
+
+        on_scan_video_dir_clicked(NULL);
+
+	}
+
+
+void	audio_modify() {
+
+	char tmp[16000], filename[4096], filetype[256];
+	time_t tmark = time(0);
+	int i, j, k, pcount = 0;
+
+	close_boxes();
+
+	gdouble vol = gtk_adjustment_get_value(adjustment27);
+	int treb_gain = gtk_adjustment_get_value(adjustment29);
+	int treb_freq = gtk_adjustment_get_value(adjustment31);
+	int bass_gain = gtk_adjustment_get_value(adjustment30);
+	int bass_freq = gtk_adjustment_get_value(adjustment32);
+
+	for (i = 0; i < (SP->scount); i++) {
+
+		if (programData[i]->play) {
+
+			programData[i]->play = 0;
+
+			pcount++;
+
+			new_name(filename, ProgramArray[i], "audLvl");
+
+			sprintf(tmp, 
+				"ffmpeg -y -loglevel info -i \"%s\" -filter_complex "
+				"\"bass=gain=%d:frequency=%d,"
+				"treble=gain=%d:frequency=%d,"
+				"volume=%f,acontrast=contrast=100\" @LOSS@ \"%s\" ",
+
+				ProgramArray[i],
+				bass_gain, bass_freq,
+				treb_gain, treb_freq,
+				vol,
+				filename);
+
+			int err_stat = ff_run("Aud Level", tmp, i);
+
+		if (err_stat != 0) {
+			zippy_says("An error occurred\n");
+			sprintf(tmp, "rm \"%s\"", filename);
+			return;
+			}
+
+			printf("Created: %s\n\n", filename);
+
+			}
+		}
+
+
+	if (!pcount) {
+		zippy_says("No files selected.\n");
+		}
+
+        gtk_widget_hide(run_result);
+
+        clear_play();
+
+        on_scan_video_dir_clicked(NULL);
+
+	}
+
