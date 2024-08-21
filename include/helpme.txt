@@ -1,0 +1,234 @@
+------------------------------------------------------------------------------
+
+September 28, 2023
+
+------------------------------------------------------------------------------
+
+Linux Media Editor
+
+Copyright (C) 2018, 2019, 2021, 2022, 2023 by Kevin C. O'Kane
+
+Kevin C. O'Kane 
+kc.okane@gmail.com
+https://www.cs.uni.edu/~okane 
+http://threadsafebooks.com/
+
+------------------------------------------------------------------------------
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+------------------------------------------------------------------------------
+
+Acknowledgments
+
+Run time routines from the VLC run time library are used for audio services.
+No VLC source code is used.
+
+ffmpeg commands are used in this project but ffmpeg API is not.
+
+Zippy. Zippy is a puppy. His accomplice is Mabel. They are very good at
+cutting things up. If you hit the right button in the right way, you will
+see them waiting to shred your video, or socks, whatever.
+
+Check out the latest video currently at:
+
+    https://youtu.be/fZIfAb0x9io
+
+NOTE: If you modify code in the *.in files, you MUST run configure.
+
+Installation
+
+The Linux main module is Zippy.c with additional code contained in the
+ZippyEditor/sgv-code/common directory. 
+
+To compile and run in Linux:
+
+	1. Depending on the target Linux system, run the correct Install
+	   script.
+
+		./DebInstall.script (for Debian based systems such as Mint and Ubuntu)
+		./ArchInstall.script (for Arch based systems such as Manjaro)
+		./FedInstall.script (for Fedora/Red Hat based systems)
+
+	   These scripts MUST be run as root. They install standard system software
+	   that is needed for compilation.
+
+	2. Depending on your target system, run ./configure:
+
+		./configure --with-system=debian (the default)
+		./configure --with-system=arch
+		./configure --with-system=fedora
+
+	3. Compile the system:
+
+		make -B
+
+	4. Check the default colors for gnome-terminal. In some systems the default
+	   results in un-readable text. Open gnome-terminal, select Edit | Preferences
+	   and set the Colors as desired. Gnome-terminal is installed if needed by
+	   the install scripts. Alternatively, you may try altering the desktop theme
+	   settings. 
+
+	4. Run the system:
+
+		./Zippy-bin
+
+
+The graphics code is based on GTK 3 (3.24 at this point in time).
+
+This is an ongoing project and there will be changes, corrections and additions
+as time goes by.
+
+------------------------------------------------------------------------------
+
+Notes
+
+Fedora and Ubuntu may raise a popup to ask if you want to Force Kill Zippy-bin 
+when Zippy-bin executes ffmpeg commands. Ignore this. 
+
+To run, execute Zippy-bin from the compilation directory. 
+
+Place videos or copies of videos you will be working with in the 'videos'
+sub-directory of the Zippy directory.
+
+Any videos or still image snapshots created by the editor will be placed in the 
+sub-drectory 'videos' and will be named with an appended ascending integer.
+Output videos are in MP4 format and still images are in PNG format.
+
+If you modify the code, modify the *.in versions and be SURE to run configure
+before you compile. The program configure converts the *.in files to *.c
+files and it is the C files that are actually compiled. Any changes you make to
+a C file directly will be lost.
+
+Cell Phone Videos
+
+Cell phone videos have a rotation meta data parameter.
+
+Rotation 0 is called 'left' and this a a wide screen format where the top of the
+phone is in your left hand when recording.
+
+Rotation 90 is called 'normal' and this is narrow screen format where the top of
+the phone is up.
+
+Rotation 180 is called 'right' and this is wide screen where the top of the
+phone is in your right hand.
+
+Rotation 270 is called 'upside down' and is narrow format with the top of the
+phone down when recording.
+
+Rotation 0 is fully supported. You may play and create clips with rotation 90
+only. Cropping and other features are restricted.
+
+The other rotations may be played but are unsupported.
+
+You may convert rotations 90, 180 and 270 to a supported format with the 
+'Standardize' tile.
+
+Video Operations
+
+When you have clicked a button to initiate a video editing operation, please wait until
+the operation has completed. 
+
+DO NOT ATTEMPT ANY OTHER ACTIONS DURING VIDEO PROCESSING.
+
+Video processing takes time. Randomly clicking other buttons will not increase
+the speed and will probably result in the video being trashed.
+
+Video processing is done by ffmpeg commands that are constructed based on your 
+selections. A copy of the ffmpeg commands are output to the originating console.
+There is a button to abort an on-going ffmpeg operation. If you do so, the
+video clip being created will be trashed.
+
+
+Hot Keys and Button Equivalent
+
+Home            move to start of video clip (Go To Clip Start)
+End             move to end of video clip  (Go To Clip End)
+Left Arrow      move back 1 seconds (Back)
+Right Arrow     move forward 1 seconds (Forward)
+Space Bar       toggle Pause (Frame By Framwe Mode)
+Escape          reset/restart player (Restart)
+d               scroll page of media entries down (Page Down)
+e               mark clip end (Mark End)
+f               halt all ffmpeg actions (Halt ffmpeg)
+h               halt player and release video (Halt Player)
+p               play clip from start (Play From Clip Start)
+s               mark clip start (Mark Start)
+u               scroll page of media entries up (Page UP)
+
+
+CODECS
+
+Most video codecs work but some, rarely, don't.
+
+Some video drivers on Linux do not have software required by libvlc to decode video.
+The xserver-xorg-video-nouveau driver does. If you experience problems, you might
+try reverting to an earlier hardware driver (nvidia 390 works for me but nvidia 470
+does not) or switch to xserver-xorg-video-nouveau. 
+
+Ordinarily, in the VLC app, this can be controlled by the --avcodec-hw=none parameter 
+but the libvlc API forbids the developer to do this for reasons that are not adequately 
+explained. If you have this problem, rendered video will not play in the editor but 
+will play with other video players such as mpv or VLC with the aforementioned parameter.
+
+Ubuntu appears to have dropped support some vdpau wrappers. There are Debian versions here:
+
+http://ftp.debian.org/debian/pool/main/v/vdpau-video/
+
+that may help (be certain to select the correct file. The one you want is probably the
+latest for your machine which is likely to be an amd64 architecture.
+
+That said, you can safely ignore error messages of the form:
+
+libva info: VA-API version 1.14.0
+libva error: vaGetDriverNameByIndex() failed with unknown libva error, driver_name = (null)
+
+These are harmless.
+
+------------------------------------------------------------------------------
+
+Windows WSL2
+
+The code now works with Windows 11 with WSL 2 / Ubuntu installed subject to availability of
+video libraries (depending on your video card and its support under Windows 11).
+
+Please install the latest version of Ubuntu (22.04 as of this writing). Older versions have
+different libraries and may not work.
+
+Due to audio timing issues in libvlc 3 and WSL 2, audio does not play correctly with libvlc 3.
+This is corrected in libvlc 4. However, libvlc 4, at this writing, does not have a stable release.
+You can use the daily unstable releases, however, being aware that a daily update may cause
+problems. They probably won't but you have been warned.
+
+To use libvlc 4, do the following:
+
+	sudo add-apt-repository ppa:videolan/master-daily
+	sudo apt update
+	sudo apt upgrade
+
+This will update to the daily libvlc 4 channel. Hopefully, a stable version 4 will be
+available soon.
+
+The Linux versions will continue to use libvlc 3 until a stable version 4 is in the distro
+channels.
+
+Some ffmpeg filters are unavailable in the WSL2 Ubuntu distro at this time. Consequently,
+some options may fail.
+
+---------------------------------------
+
+To limit cpu usage to keep from over heating. Numbers are cpu core nbrs.
+
+taskset -c 0,1,2,3 command
+
+
