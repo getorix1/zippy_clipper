@@ -1,0 +1,67 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+      by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	August 10, 2024
+
+	#include "includes.h"
+	#include "common-externs.h"
+
+	#define SLASH '/'
+
+//-------------------------------------------
+//      Play file common code interface
+//-------------------------------------------
+
+void    PlayClip (GtkButton *button, GtkEntry *user_data, int Row) {
+
+        gchar * text1 ;
+
+	on_haltProgram_clicked (NULL);
+
+	gtk_widget_hide(run_result);
+
+	vlc_no_pause();
+
+        if (SP->Pause) {
+                SP->Pause = 0;
+                }
+
+        text1 = (gchar *) user_data;
+
+        if (strlen((char *) text1) == 0) {
+                Message("No file specified.");    // update label
+                return;
+                }
+
+        strcpy(SP->playThis, text1);
+
+        SP->playClip = 1;
+
+        return;
+        }
+

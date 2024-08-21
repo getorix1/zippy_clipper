@@ -1,0 +1,307 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+      by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Feb 24, 2024
+
+	#include "includes.h"
+	#include "common-externs.h"
+
+	#define SLASH '/'
+
+//-------------------------------------------------------
+//      move individual cuts to top including album cuts
+//-------------------------------------------------------
+
+void    moveToBottom (int row) {
+
+        moveOneToBottom(row); // regular entry
+        return;
+
+        }
+
+//--------------------------------------------------------------------
+//      Service function to move a program array line to last place.
+//--------------------------------------------------------------------
+
+void    moveOneToBottom (int row) {
+
+        int i;
+        char row_entry[PGM_MAX];
+        struct ST sndr;
+        int played, playtime, last;
+
+	if (SP->scount == 1) return;
+
+        // caputure current row
+
+        strcpy(row_entry, ProgramArray[row]);
+        sndr.play = programData[row]->play;
+        last = programData[row]->last_location;
+        played = programPlayed[row];
+        playtime = programTime[row];
+
+
+        delRow ( row );
+
+        if(SP->scount + 1 >= PROGRAM_MAX) {
+                printf("*** PROGRAM_MAX exceeded in move to bottom\n");
+                return;
+                }
+
+        i = SP->scount ;
+
+        printf("*** Move %d to %d\n", row, i);
+
+        strcpy(ProgramArray[i], row_entry);   // insert new entry
+        programData[i]->play = 0;
+        programData[i]->last_location = 0;
+        programPlayed[i] = 0;
+        programTime[i] = playtime;
+
+        (SP->scount)++;
+
+        printf("*** SP->scount now %d\n", SP->scount);
+
+        DisplayProgramButtons();
+        }
+
+
+
+//-------------------------------------------------------------------
+//      Move a program array item to the 1st slot after tile clicked
+//-------------------------------------------------------------------
+
+void    addToTop (char * file) { //move file or album to first position(s)
+        int i;
+        char row_entry[PGM_MAX];
+        struct ST sndr;
+        int played, playtime;
+
+        if ( strlen(file) == 0 ) return;
+
+//------------------------------
+//	caputure current row
+//------------------------------
+
+        strcpy(row_entry, file);
+        sndr.play = 1;
+        played = 0;
+        playtime = -1;
+
+        for (i = SP->scount; i > 0; i--) {        // shift entries up one
+                strcpy(ProgramArray[i], ProgramArray[i - 1]);
+                programData[i]->play = programData[i - 1]->play;
+                programData[i]->last_location = programData[i - 1]->last_location;
+                programPlayed[i] = programPlayed[i - 1];
+                programTime[i] = programTime[i - 1];
+                }
+
+        strcpy(ProgramArray[0], row_entry);   // insert new entry
+
+        programData[0]->play = 9; // checked
+
+        programPlayed[0] = 0;
+        programTime[0] = -1;
+	programData[0]->last_location = 0;
+        (SP->scount)++;
+
+	on_scan_video_dir_clicked(NULL);
+	on_date_sort_clicked(NULL);
+
+        }
+
+
+
+//-------------------------------------------------------------------
+//      Move a program array entry to the 1st slot service fucntion
+//-------------------------------------------------------------------
+
+void    moveOneToTop (int row) { //move file or album to first position(s)
+        int i;
+        char row_entry[PGM_MAX];
+        struct ST sndr;
+        int played, playtime;
+
+        if ( row <= 0 ) return;
+
+//-----------------------------
+//      caputure current row
+//-----------------------------
+
+        strcpy(row_entry, ProgramArray[row]);
+        sndr.play = programData[row]->play;
+        played = programPlayed[row];
+        playtime = programTime[row];
+
+        delRow ( row );
+
+        for (i = SP->scount; i>0; i--) {        // shift entries up one
+                strcpy(ProgramArray[i], ProgramArray[i-1]);
+                programData[i]->play = programData[i-1]->play;
+                programData[i]->last_location = programData[i-1]->last_location;
+                programPlayed[i] = programPlayed[i-1];
+                programTime[i] = programTime[i-1];
+                }
+
+        strcpy(ProgramArray[0], row_entry);   // insert new entry
+
+        programData[0]->play = 1; // checked
+
+        programPlayed[0] = played;
+        programTime[0] = playtime;
+	programData[0]->last_location = 0;
+
+        (SP->scount)++;
+        }
+
+
+//--------------------------------------------------
+//      Move program array entry to 1st position
+//--------------------------------------------------
+
+void    moveToTop (int row) { //move file or album to first position(s)
+
+        printf("*** move to top row %d \n", row);
+
+        moveOneToTop(row);
+        return;
+        }
+
+
+
+//-------------------------------------------------------------------
+//      Swap a program array entry to the 1st slot service fucntion
+//-------------------------------------------------------------------
+
+void    SwapProgramElement (int row) {
+
+        char row_entry[PGM_MAX];
+        struct ST sndr;
+        int played, playtime, last;
+
+//--------------------
+//      copy row
+//--------------------
+
+        strcpy(row_entry, ProgramArray[row]);
+        sndr.play = programData[row]->play;
+        last = programData[row]->last_location;
+        played = programPlayed[row];
+        playtime = programTime[row];
+
+//-------------------
+//      shift down
+//-------------------
+
+        strcpy(ProgramArray[row], ProgramArray[row+1]);
+        programData[row]->play = programData[row+1]->play;
+        programData[row]->last_location = programData[row+1]->last_location;
+        programPlayed[row] = programPlayed[row+1];
+        programTime[row] = programTime[row+1];
+
+//------------------------
+//      replace row above
+//------------------------
+
+        strcpy(ProgramArray[row+1], row_entry);
+        programData[row+1]->play = sndr.play;
+        programData[row+1]->last_location = last;
+        programPlayed[row+1] = played;
+        programTime[row+1] = playtime;
+
+        }
+
+//-----------------------------------------------------
+//      Delete a program array entry service function
+//-----------------------------------------------------
+
+void    delRow(int Row) {
+
+        int i, flg = 0, played;
+        char time[32],file[512];
+
+	if (Row >= PROGRAM_MAX) {
+		printf("*** Row exceeds PROGRAM_MAX in delRow()\n");
+		return;
+		}
+
+	if (Row > SP->scount - 1) { // clear the high row
+		strcpy(ProgramArray[Row], "");
+		programData[Row]->play = 0;
+		programData[Row]->last_location = 0;
+		programPlayed[Row] = 0;
+		programTime[Row] = 0;
+		return;
+		}
+
+        if (SP->scount == 0) {
+		strcpy(ProgramArray[0], "");
+		programData[0]->play = 0;
+		programData[0]->last_location = 0;
+		programPlayed[0] = 0;
+		programTime[0] = 0;
+		DisplayProgramButtons();
+                Message("Empty List");
+                return;
+                }
+
+        printf("*** delete row %d\n",Row);
+
+	if (Row != SP->scount - 1) {
+
+        	for (i = Row; i <= SP->scount - 2; i++) {
+
+                	if (SP->NowPlaying == i + 1) 
+				SP->NowPlaying = SP->NowPlaying - 1;
+	
+                	strcpy(ProgramArray[i], ProgramArray[i + 1]);
+                	programData[i]->play = programData[i + 1]->play;
+                	programData[i]->last_location = programData[i + 1]->last_location;
+                	programPlayed[i] = programPlayed[i + 1];
+                	programTime[i] = programTime[i + 1];
+                	}
+
+		strcpy(ProgramArray[SP->scount - 1], "");
+		programData[SP->scount - 1]->play = 0;
+		programData[SP->scount - 1]->last_location = 0;
+		programPlayed[SP->scount - 1] = 0;
+		programTime[SP->scount - 1] = 0;
+		}
+
+	else {
+		strcpy(ProgramArray[Row], "");
+		programData[Row]->play = 0;
+		programData[Row]->last_location = 0;
+		programPlayed[Row] = 0;
+		programTime[Row] = 0;
+		}
+
+        (SP->scount)--;
+        DisplayProgramButtons();
+        }
+

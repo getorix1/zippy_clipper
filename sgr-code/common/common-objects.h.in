@@ -1,0 +1,359 @@
+/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Glade / Gtk Programming
+#+
+#+     Copyright (C) 2020, 2021,, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     http://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	August 6, 2024
+
+#ifndef COMMON_OBJECTS_H
+#define COMMON_OBJECTS_H
+
+#define QUOTE "\""
+
+#define mkstr(s) #s
+
+settings_dlg		= GTK_WIDGET(gtk_builder_get_object(builder, "settings_dlg"));
+video_adj_box		= GTK_WIDGET(gtk_builder_get_object(builder, "video_adj_box"));
+overlay_end_lbl	= GTK_WIDGET(gtk_builder_get_object(builder, "overlay_end_lbl"));
+overlay_end	= GTK_WIDGET(gtk_builder_get_object(builder, "overlay_end"));
+five_speed 	= GTK_WIDGET(gtk_builder_get_object(builder, "five_speed"));
+quad_speed = GTK_WIDGET(gtk_builder_get_object(builder, "quad_speed"));
+tripple_speed= GTK_WIDGET(gtk_builder_get_object(builder, "tripple_speed"));
+double_speed= GTK_WIDGET(gtk_builder_get_object(builder, "double_speed"));
+full_speed= GTK_WIDGET(gtk_builder_get_object(builder, "full_speed"));
+half_speed= GTK_WIDGET(gtk_builder_get_object(builder, "half_speed"));
+quarter_speed= GTK_WIDGET(gtk_builder_get_object(builder, "quarter_speed"));
+eighth_speed= GTK_WIDGET(gtk_builder_get_object(builder, "eighth_speed"));
+
+row_nbr0		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr0")); 
+row_nbr1		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr1")); 
+row_nbr2		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr2")); 
+row_nbr3		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr3")); 
+row_nbr4		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr4")); 
+row_nbr5		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr5")); 
+row_nbr6		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr6")); 
+row_nbr7		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr7")); 
+row_nbr8		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr8")); 
+row_nbr9		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr9")); 
+row_nbr10		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr10")); 
+row_nbr11		= GTK_WIDGET(gtk_builder_get_object(builder, "row_nbr11")); 
+frames_per_second	= GTK_WIDGET(gtk_builder_get_object(builder, "frames_per_second")); 
+dismiss_zippy_says	= GTK_WIDGET(gtk_builder_get_object(builder, "dismiss_zippy_says")); 
+pause_frames		= GTK_WIDGET(gtk_builder_get_object(builder, "pause_frames")); 
+drawV1			= GTK_WIDGET(gtk_builder_get_object(builder, "drawV1")); 
+play_clip1		= GTK_WIDGET(gtk_builder_get_object(builder, "play_clip1")); 
+sel1			= GTK_WIDGET(gtk_builder_get_object(builder, "sel1")); 
+sel2			= GTK_WIDGET(gtk_builder_get_object(builder, "sel2")); 
+sel3			= GTK_WIDGET(gtk_builder_get_object(builder, "sel3")); 
+sel4			= GTK_WIDGET(gtk_builder_get_object(builder, "sel4")); 
+esel1			= GTK_WIDGET(gtk_builder_get_object(builder, "esel1")); 
+esel2			= GTK_WIDGET(gtk_builder_get_object(builder, "esel2")); 
+esel3			= GTK_WIDGET(gtk_builder_get_object(builder, "esel3")); 
+esel4			= GTK_WIDGET(gtk_builder_get_object(builder, "esel4")); 
+overlay_box		= GTK_WIDGET(gtk_builder_get_object(builder, "overlay_box")); 
+frame_forward1		= GTK_WIDGET(gtk_builder_get_object(builder, "frame_forward1")); 
+frame_forward2		= GTK_WIDGET(gtk_builder_get_object(builder, "frame_forward2")); 
+sp_count		= GTK_WIDGET(gtk_builder_get_object(builder, "sp_count")); 
+loop_stream		= GTK_WIDGET(gtk_builder_get_object(builder, "loop_stream")); 
+out_fade		= GTK_WIDGET(gtk_builder_get_object(builder, "out_fade")); 
+in_fade			= GTK_WIDGET(gtk_builder_get_object(builder, "in_fade")); 
+granularity		= GTK_WIDGET(gtk_builder_get_object(builder, "granularity")); 
+zippy_toy		= GTK_WIDGET(gtk_builder_get_object(builder, "zippy_toy")); 
+pgedit_back		= GTK_WIDGET(gtk_builder_get_object(builder, "pgedit_back")); 
+frame_image		= GTK_WIDGET(gtk_builder_get_object(builder, "frame_image")); 
+frame_image1		= GTK_WIDGET(gtk_builder_get_object(builder, "frame_image1")); 
+frame_image2		= GTK_WIDGET(gtk_builder_get_object(builder, "frame_image2")); 
+frame_image3		= GTK_WIDGET(gtk_builder_get_object(builder, "frame_image3")); 
+frame_image4		= GTK_WIDGET(gtk_builder_get_object(builder, "frame_image4")); 
+frame_image5		= GTK_WIDGET(gtk_builder_get_object(builder, "frame_image5")); 
+flbl1			= GTK_WIDGET(gtk_builder_get_object(builder, "flbl1")); 
+flbl2			= GTK_WIDGET(gtk_builder_get_object(builder, "flbl2")); 
+flbl3			= GTK_WIDGET(gtk_builder_get_object(builder, "flbl3")); 
+flbl4			= GTK_WIDGET(gtk_builder_get_object(builder, "flbl4")); 
+flbl5			= GTK_WIDGET(gtk_builder_get_object(builder, "flbl5")); 
+rantran			= GTK_WIDGET(gtk_builder_get_object(builder, "rantran")); 
+select_all		= GTK_WIDGET(gtk_builder_get_object(builder, "select_all")); 
+clear_all		= GTK_WIDGET(gtk_builder_get_object(builder, "clear_all")); 
+dir_label		= GTK_WIDGET(gtk_builder_get_object(builder, "dir_label")); 
+file_name_entry		= GTK_WIDGET(gtk_builder_get_object(builder, "file_name_entry")); 
+file_name_cancel	= GTK_WIDGET(gtk_builder_get_object(builder, "file_name_cancel")); 
+file_name_ok		= GTK_WIDGET(gtk_builder_get_object(builder, "file_name_ok")); 
+file_name		= GTK_WIDGET(gtk_builder_get_object(builder, "file_name")); 
+insert_text		= GTK_WIDGET(gtk_builder_get_object(builder, "insert_text")); 
+monochrome		= GTK_WIDGET(gtk_builder_get_object(builder, "monochrome")); 
+run_result		= GTK_WIDGET(gtk_builder_get_object(builder, "run_result")); 
+sharp_x			= GTK_WIDGET(gtk_builder_get_object(builder, "sharp_x")); 
+sharp_y			= GTK_WIDGET(gtk_builder_get_object(builder, "sharp_y")); 
+sharp_amount		= GTK_WIDGET(gtk_builder_get_object(builder, "sharp_amount")); 
+text_image		= GTK_WIDGET(gtk_builder_get_object(builder, "text_image")); 
+text_end		= GTK_WIDGET(gtk_builder_get_object(builder, "text_end")); 
+text_start		= GTK_WIDGET(gtk_builder_get_object(builder, "text_start")); 
+text_fixed		= GTK_WIDGET(gtk_builder_get_object(builder, "text_fixed")); 
+text_label		= GTK_WIDGET(gtk_builder_get_object(builder, "text_label")); 
+text_frame		= GTK_WIDGET(gtk_builder_get_object(builder, "text_frame")); 
+back_color		= GTK_COLOR_BUTTON(gtk_builder_get_object(builder, "back_color")); 
+text_color		= GTK_COLOR_BUTTON(gtk_builder_get_object(builder, "text_color")); 
+edge_canny		= GTK_WIDGET(gtk_builder_get_object(builder, "edge_canny")); 
+edge_wires		= GTK_WIDGET(gtk_builder_get_object(builder, "edge_wires")); 
+edge_colormix		= GTK_WIDGET(gtk_builder_get_object(builder, "edge_colormix")); 
+view_log		= GTK_WIDGET(gtk_builder_get_object(builder, "view_log")); 
+dbox4_tv		= GTK_WIDGET(gtk_builder_get_object(builder, "dbox4_tv")); 
+dbox4_sw		= GTK_WIDGET(gtk_builder_get_object(builder, "dbox4_sw")); 
+clip_length		= GTK_WIDGET(gtk_builder_get_object(builder, "clip_length")); 
+time_7			= GTK_WIDGET(gtk_builder_get_object(builder, "time_7")); 
+time_8			= GTK_WIDGET(gtk_builder_get_object(builder, "time_8")); 
+time_9			= GTK_WIDGET(gtk_builder_get_object(builder, "time_9")); 
+time_10			= GTK_WIDGET(gtk_builder_get_object(builder, "time_10")); 
+time_11			= GTK_WIDGET(gtk_builder_get_object(builder, "time_11")); 
+time_12			= GTK_WIDGET(gtk_builder_get_object(builder, "time_12")); 
+time_13			= GTK_WIDGET(gtk_builder_get_object(builder, "time_13")); 
+time_14			= GTK_WIDGET(gtk_builder_get_object(builder, "time_14")); 
+time_2			= GTK_WIDGET(gtk_builder_get_object(builder, "time_2")); 
+time_3			= GTK_WIDGET(gtk_builder_get_object(builder, "time_3")); 
+time_4			= GTK_WIDGET(gtk_builder_get_object(builder, "time_4")); 
+time_15			= GTK_WIDGET(gtk_builder_get_object(builder, "time_15")); 
+top1_back		= GTK_WIDGET(gtk_builder_get_object(builder, "top1_back")); 
+top1_back1		= GTK_WIDGET(gtk_builder_get_object(builder, "top1_back1")); 
+join_group21		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group21")); 
+join_group20		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group20")); 
+join_group19		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group19")); 
+join_group18		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group18")); 
+join_group17		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group17")); 
+join_group16		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group16")); 
+join_group15		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group15")); 
+join_group14		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group14")); 
+join_group13		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group13")); 
+join_group12		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group12")); 
+join_group11		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group11")); 
+join_group10		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group10")); 
+join_group9		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group9")); 
+join_group8		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group8")); 
+join_group7		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group7")); 
+join_group6		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group6")); 
+join_group5		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group5")); 
+join_group4		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group4")); 
+join_group3		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group3")); 
+join_group2		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group2")); 
+join_group1		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group1")); 
+join_group		= GTK_WIDGET(gtk_builder_get_object(builder, "join_group")); 
+vid_custom		= GTK_WIDGET(gtk_builder_get_object(builder, "vid_custom")); 
+vid_640x480		= GTK_WIDGET(gtk_builder_get_object(builder, "vid_640x480")); 
+vid_720x480		= GTK_WIDGET(gtk_builder_get_object(builder, "vid_720x480")); 
+vid_1280x720		= GTK_WIDGET(gtk_builder_get_object(builder, "vid_1280x720")); 
+vid_1920x1080		= GTK_WIDGET(gtk_builder_get_object(builder, "vid_1920x1080")); 
+vid_3840x2160		= GTK_WIDGET(gtk_builder_get_object(builder, "vid_3840x2160")); 
+crop_left		= GTK_WIDGET(gtk_builder_get_object(builder, "crop_left")); 
+crop_right		= GTK_WIDGET(gtk_builder_get_object(builder, "crop_right")); 
+crop_top		= GTK_WIDGET(gtk_builder_get_object(builder, "crop_top")); 
+crop_bottom		= GTK_WIDGET(gtk_builder_get_object(builder, "crop_bottom")); 
+frame_next		= GTK_WIDGET(gtk_builder_get_object(builder, "frame_next")); 
+full_speed		= GTK_WIDGET(gtk_builder_get_object(builder, "full_speed")); 
+posLbl			= GTK_WIDGET(gtk_builder_get_object(builder, "posLbl")); 
+strip_audio		= GTK_WIDGET(gtk_builder_get_object(builder, "strip_audio")); 
+snapshot		= GTK_WIDGET(gtk_builder_get_object(builder, "snapshot")); 
+join_videos		= GTK_WIDGET(gtk_builder_get_object(builder, "join_videos")); 
+frame_grab		= GTK_WIDGET(gtk_builder_get_object(builder, "frame_grab")); 
+crop_full		= GTK_WIDGET(gtk_builder_get_object(builder, "crop_full")); 
+crop_reset		= GTK_WIDGET(gtk_builder_get_object(builder, "crop_reset")); 
+clear_clip		= GTK_WIDGET(gtk_builder_get_object(builder, "clear_clip")); 
+pg_edit			= GTK_WIDGET(gtk_builder_get_object(builder, "pg_edit")); 
+ct_fixed		= GTK_WIDGET(gtk_builder_get_object(builder, "ct_fixed")); 
+ed_fixed		= GTK_WIDGET(gtk_builder_get_object(builder, "ed_fixed")); 
+make_clip		= GTK_WIDGET(gtk_builder_get_object(builder, "make_clip")); 
+end_mark		= GTK_WIDGET(gtk_builder_get_object(builder, "end_mark")); 
+start_mark		= GTK_WIDGET(gtk_builder_get_object(builder, "start_mark")); 
+mini_mode		= GTK_WIDGET(gtk_builder_get_object(builder, "mini_mode"));
+time_of_day		= GTK_WIDGET(gtk_builder_get_object(builder, "time_of_day"));
+adjustment1		= gtk_builder_get_object(builder, "adjustment1");
+adjustment40		= gtk_builder_get_object(builder, "adjustment40");
+adjustment54		= gtk_builder_get_object(builder, "adjustment54");
+adjustment6		= gtk_builder_get_object(builder, "adjustment6");
+adjustment7		= gtk_builder_get_object(builder, "adjustment7");
+adjustment8		= gtk_builder_get_object(builder, "adjustment8");
+adjustment9		= gtk_builder_get_object(builder, "adjustment9");
+adjustment10		= gtk_builder_get_object(builder, "adjustment10");
+adjustment11		= gtk_builder_get_object(builder, "adjustment11");
+adjustment12		= gtk_builder_get_object(builder, "adjustment12");
+adjustment13		= gtk_builder_get_object(builder, "adjustment13"); // back_trans
+adjustment14		= gtk_builder_get_object(builder, "adjustment14"); // text_start
+adjustment15		= gtk_builder_get_object(builder, "adjustment15"); // text_end
+adjustment16		= gtk_builder_get_object(builder, "adjustment16"); // text_size
+adjustment20		= gtk_builder_get_object(builder, "adjustment20"); // granularity
+adjustment21		= gtk_builder_get_object(builder, "adjustment21"); // loop stream
+adjustment22		= gtk_builder_get_object(builder, "adjustment22"); // incr secs
+adjustment23		= gtk_builder_get_object(builder, "adjustment23"); // incr secs
+adjustment25		= gtk_builder_get_object(builder, "adjustment25"); // clip coord
+adjustment26		= gtk_builder_get_object(builder, "adjustment26"); // clip coord
+adjustment27		= gtk_builder_get_object(builder, "adjustment27"); // audio level
+adjustment28		= gtk_builder_get_object(builder, "adjustment28"); // clip speed
+adjustment29		= gtk_builder_get_object(builder, "adjustment29"); // clip speed
+adjustment30		= gtk_builder_get_object(builder, "adjustment30"); // clip speed
+adjustment31		= gtk_builder_get_object(builder, "adjustment31"); // clip speed
+adjustment32		= gtk_builder_get_object(builder, "adjustment32"); // clip speed
+adjustment33		= gtk_builder_get_object(builder, "adjustment33"); // clip speed
+adjustment37		= gtk_builder_get_object(builder, "adjustment37"); // clip scale
+audio			= GTK_WIDGET(gtk_builder_get_object(builder, "audio"));
+background		= GTK_WIDGET(gtk_builder_get_object(builder, "background"));
+button10		= GTK_WIDGET(gtk_builder_get_object(builder, "button10"));
+button11		= GTK_WIDGET(gtk_builder_get_object(builder, "button11"));
+button12		= GTK_WIDGET(gtk_builder_get_object(builder, "button12"));
+button13		= GTK_WIDGET(gtk_builder_get_object(builder, "button13"));
+button14		= GTK_WIDGET(gtk_builder_get_object(builder, "button14"));
+button15		= GTK_WIDGET(gtk_builder_get_object(builder, "button15"));
+button2			= GTK_WIDGET(gtk_builder_get_object(builder, "button2"));
+button3			= GTK_WIDGET(gtk_builder_get_object(builder, "button3"));
+button5			= GTK_WIDGET(gtk_builder_get_object(builder, "button5"));
+button6			= GTK_WIDGET(gtk_builder_get_object(builder, "button6"));
+button8			= GTK_WIDGET(gtk_builder_get_object(builder, "button8"));
+button9			= GTK_WIDGET(gtk_builder_get_object(builder, "button9"));
+calibrateLbl		= GTK_WIDGET(gtk_builder_get_object(builder, "calibrateLbl"));
+cbox1			= GTK_WIDGET(gtk_builder_get_object(builder, "cbox1"));
+check10			= GTK_WIDGET(gtk_builder_get_object(builder, "check10"));
+check11			= GTK_WIDGET(gtk_builder_get_object(builder, "check11"));
+check12			= GTK_WIDGET(gtk_builder_get_object(builder, "check12"));
+check1			= GTK_WIDGET(gtk_builder_get_object(builder, "check1"));
+check2			= GTK_WIDGET(gtk_builder_get_object(builder, "check2"));
+check3			= GTK_WIDGET(gtk_builder_get_object(builder, "check3"));
+check4			= GTK_WIDGET(gtk_builder_get_object(builder, "check4"));
+check5			= GTK_WIDGET(gtk_builder_get_object(builder, "check5"));
+check6			= GTK_WIDGET(gtk_builder_get_object(builder, "check6"));
+check7			= GTK_WIDGET(gtk_builder_get_object(builder, "check7"));
+check8          	= GTK_WIDGET(gtk_builder_get_object(builder, "check8"));
+check9          	= GTK_WIDGET(gtk_builder_get_object(builder, "check9"));
+choose1         	= GTK_WIDGET(gtk_builder_get_object(builder, "choose1"));
+dir_chooser         	= GTK_WIDGET(gtk_builder_get_object(builder, "dir_chooser"));
+classical       	= GTK_WIDGET(gtk_builder_get_object(builder, "classical"));
+clevel          	= GTK_WIDGET(gtk_builder_get_object(builder, "clevel"));
+//clipThreshold   	= GTK_WIDGET(gtk_builder_get_object(builder, "clipThreshold"));
+club            	= GTK_WIDGET(gtk_builder_get_object(builder, "club"));
+controls        	= GTK_WIDGET(gtk_builder_get_object(builder, "controls"));
+currentFile     	= GTK_WIDGET(gtk_builder_get_object(builder, "currentFile"));
+dance           	= GTK_WIDGET(gtk_builder_get_object(builder, "dance"));
+del10           	= GTK_WIDGET(gtk_builder_get_object(builder, "del10"));
+del11           	= GTK_WIDGET(gtk_builder_get_object(builder, "del11"));
+del12           	= GTK_WIDGET(gtk_builder_get_object(builder, "del12"));
+del13           	= GTK_WIDGET(gtk_builder_get_object(builder, "del13"));
+del14           	= GTK_WIDGET(gtk_builder_get_object(builder, "del14"));
+del15           	= GTK_WIDGET(gtk_builder_get_object(builder, "del15"));
+del2            	= GTK_WIDGET(gtk_builder_get_object(builder, "del2"));
+del3            	= GTK_WIDGET(gtk_builder_get_object(builder, "del3"));
+del4            	= GTK_WIDGET(gtk_builder_get_object(builder, "del4"));
+del7            	= GTK_WIDGET(gtk_builder_get_object(builder, "del7"));
+del8            	= GTK_WIDGET(gtk_builder_get_object(builder, "del8"));
+del9            	= GTK_WIDGET(gtk_builder_get_object(builder, "del9"));
+drawV           	= GTK_WIDGET(gtk_builder_get_object(builder, "drawV"));
+draw3           	= GTK_WIDGET(gtk_builder_get_object(builder, "draw3"));
+clip_markers           	= GTK_WIDGET(gtk_builder_get_object(builder, "clip_markers"));
+egg_image       	= GTK_WIDGET(gtk_builder_get_object(builder, "egg_image"));
+empty           	= GTK_WIDGET(gtk_builder_get_object(builder, "empty"));
+OverlayEntry1         	= GTK_ENTRY(gtk_builder_get_object(builder, "OverlayEntry1"));
+OverlayEntry2         	= GTK_ENTRY(gtk_builder_get_object(builder, "OverlayEntry2"));
+OverlayEntry3         	= GTK_ENTRY(gtk_builder_get_object(builder, "OverlayEntry3"));
+entry10         	= GTK_ENTRY(gtk_builder_get_object(builder, "entry10"));
+entry11         	= GTK_ENTRY(gtk_builder_get_object(builder, "entry11"));
+entry12         	= GTK_ENTRY(gtk_builder_get_object(builder, "entry12"));
+entry13         	= GTK_ENTRY(gtk_builder_get_object(builder, "entry13"));
+entry14         	= GTK_ENTRY(gtk_builder_get_object(builder, "entry14"));
+entry15         	= GTK_ENTRY(gtk_builder_get_object(builder, "entry15"));
+entry1          	= GTK_ENTRY(gtk_builder_get_object(builder, "entry1"));
+entry2          	= GTK_ENTRY(gtk_builder_get_object(builder, "entry2"));
+entry3          	= GTK_ENTRY(gtk_builder_get_object(builder, "entry3"));
+entry4          	= GTK_ENTRY(gtk_builder_get_object(builder, "entry4"));
+entry7          	= GTK_ENTRY(gtk_builder_get_object(builder, "entry7"));
+entry8          	= GTK_ENTRY(gtk_builder_get_object(builder, "entry8"));
+entry9          	= GTK_ENTRY(gtk_builder_get_object(builder, "entry9"));
+eqReset         	= GTK_WIDGET(gtk_builder_get_object(builder, "eqReset"));
+first           	= GTK_WIDGET(gtk_builder_get_object(builder, "first"));
+fixed1          	= GTK_WIDGET(gtk_builder_get_object(builder, "fixed1"));
+fixed2          	= GTK_WIDGET(gtk_builder_get_object(builder, "fixed2"));
+fixed_slides    	= GTK_WIDGET(gtk_builder_get_object(builder, "fixed_slides"));
+g_btn_play      	= GTK_WIDGET(gtk_builder_get_object(builder, "button1"));
+g_dbox5Entry    	= GTK_ENTRY(gtk_builder_get_object(builder,  "dbox5Entry"));
+g_dbox4         	= GTK_WIDGET(gtk_builder_get_object(builder, "dbox4"));
+g_dbox5         	= GTK_WIDGET(gtk_builder_get_object(builder, "dbox5"));
+haltProgram     	= GTK_WIDGET(gtk_builder_get_object(builder, "haltProgram"));
+highLabel       	= GTK_WIDGET(gtk_builder_get_object(builder, "highLabel"));
+horLabel        	= GTK_WIDGET(gtk_builder_get_object(builder, "horLabel"));
+lbl10           	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl10"));
+lbl11           	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl11"));
+lbl12           	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl12"));
+lbl1            	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl1"));
+lbl22           	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl22"));
+lbl23           	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl23"));
+lbl24           	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl24"));
+lbl25           	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl25"));
+lbl2            	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl2"));
+lbl3            	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl3"));
+lbl4            	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl4"));
+lbl5            	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl5"));
+lbl6            	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl6"));
+lbl7            	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl7"));
+lbl8            	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl8"));
+lbl9            	= GTK_WIDGET(gtk_builder_get_object(builder, "lbl9"));
+live            	= GTK_WIDGET(gtk_builder_get_object(builder, "live"));
+more            	= GTK_WIDGET(gtk_builder_get_object(builder, "more"));
+rayLbl          	= GTK_WIDGET(gtk_builder_get_object(builder, "rayLbl"));
+scroll          	= GTK_WIDGET(gtk_builder_get_object(builder, "scroll"));
+sgrStudio       	= GTK_WIDGET(gtk_builder_get_object(builder, "sgrStudio"));
+sort            	= GTK_WIDGET(gtk_builder_get_object(builder, "sort"));
+sort1            	= GTK_WIDGET(gtk_builder_get_object(builder, "sort1"));
+source          	= GTK_WIDGET(gtk_builder_get_object(builder, "source"));
+up10            	= GTK_WIDGET(gtk_builder_get_object(builder, "up10"));
+up11            	= GTK_WIDGET(gtk_builder_get_object(builder, "up11"));
+up12            	= GTK_WIDGET(gtk_builder_get_object(builder, "up12"));
+up1             	= GTK_WIDGET(gtk_builder_get_object(builder, "up1"));
+up2             	= GTK_WIDGET(gtk_builder_get_object(builder, "up2"));
+up3             	= GTK_WIDGET(gtk_builder_get_object(builder, "up3"));
+up4             	= GTK_WIDGET(gtk_builder_get_object(builder, "up4"));
+up5             	= GTK_WIDGET(gtk_builder_get_object(builder, "up5"));
+up6             	= GTK_WIDGET(gtk_builder_get_object(builder, "up6"));
+up7             	= GTK_WIDGET(gtk_builder_get_object(builder, "up7"));
+up8             	= GTK_WIDGET(gtk_builder_get_object(builder, "up8"));
+up9             	= GTK_WIDGET(gtk_builder_get_object(builder, "up9"));
+vlcPosition     	= GTK_WIDGET(gtk_builder_get_object(builder, "vlcPosition"));
+
+extern GtkWidget *Bars;
+Bars			= GTK_WIDGET(gtk_builder_get_object(builder, "Bars"));
+
+extern GtkWidget *draw1;
+draw1			= GTK_WIDGET(gtk_builder_get_object(builder, "draw1"));
+
+extern GtkWidget *draw2;
+draw2			= GTK_WIDGET(gtk_builder_get_object(builder, "draw2"));
+
+extern GtkWidget *fixed1a;
+fixed1a			= GTK_WIDGET(gtk_builder_get_object(builder, "fixed1a"));
+
+extern GtkWidget *Spectrum;
+Spectrum		= GTK_WIDGET(gtk_builder_get_object(builder, "Spectrum"));
+
+extern GtkWidget *meters;
+meters			= GTK_WIDGET(gtk_builder_get_object(builder, "meters"));
+
+extern GtkWidget *balance;
+balance			= GTK_WIDGET(gtk_builder_get_object(builder, "balance"));
+
+#endif

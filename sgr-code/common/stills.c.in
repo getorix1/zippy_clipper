@@ -1,0 +1,158 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024 
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	August 2, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+void on_create_stills_clicked() {
+
+	char tmp[16000];
+	char tmp1[16000];
+	int i, j;
+
+	close_boxes();
+
+	gtk_widget_hide(drawV);
+	while (gtk_events_pending ()) gtk_main_iteration ();
+
+	if (!mediaPlayer) {
+		zippy_says("No file being played.\n");
+		return;
+		}
+
+//        libvlc_video_get_size (mediaPlayer, 0, &frame_width, &frame_height);
+
+	if (clip_end == 0 || clip_end - clip_start < 0) {
+		clip_end = libvlc_media_player_get_length (mediaPlayer);
+		}
+
+	sprintf(tmp, "mkdir -p \"%s/stills\" ", Music_Home_Directory);
+	printf("%s\n", tmp);
+	system(tmp);
+
+	sprintf(tmp, "rm \"%s/stills/\"* ", Music_Home_Directory);
+	printf("%s\n", tmp);
+	system(tmp);
+
+	gdouble x = gtk_spin_button_get_value (frames_per_second);
+
+	sprintf(tmp, "ffmpeg -i \"%s\" -ss %d -to %d -vf fps=%f \"%s/stills/\"image-%%03d.png",
+		SP->playThis, (int) (clip_start / 1000), (int) (clip_end / 1000), 
+		(x / 60.0), Music_Home_Directory);
+
+
+	int err_stat = ff_run("Stills", tmp, -1);
+
+	if (err_stat != 0) {
+		zippy_says("An error occurred\n");
+		return;
+		}
+
+	printf("Created: %s\n", "image-*.png");
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+	gtk_widget_show(drawV);
+
+        clear_play();
+
+        on_scan_video_dir_clicked(NULL);
+
+
+        }
+
+
+void on_create_stills1_clicked() {
+
+	char tmp[16000];
+	char tmp1[16000];
+	int i, j;
+	time_t tmark = time(0);
+
+	close_boxes();
+
+	gtk_widget_hide(drawV);
+while (gtk_events_pending ()) gtk_main_iteration ();
+
+
+	struct stat sb;
+
+	sprintf(tmp1, "%s/stills", Music_Home_Directory);
+
+	if (stat(tmp1, &sb) == 0 && S_ISDIR(sb.st_mode)) {
+    		/* Directory exists */
+		}
+	else {
+    		/* Directory does not exist or is not a directory */
+		zippy_says("still directory does not exist\n");
+		return;
+		}
+
+	gdouble x = gtk_spin_button_get_value (frames_per_second);
+
+	strcat(tmp1, "/*.png");
+
+	sprintf(tmp, "ffmpeg -y -framerate %f -pattern_type glob -i '%s' -c:v libx264 "
+		" -pix_fmt yuv420p video-%d.@FMT@",
+		(x / 60.0), tmp1, tmark );
+
+
+	int err_stat = ff_run("Video", tmp, -1);
+
+	if (err_stat != 0) {
+		zippy_says("An error occurred\n");
+		return;
+		}
+
+	printf("Created: video-%d.@FMT@\n", tmark);
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+	gtk_widget_show(drawV);
+
+        clear_play();
+
+        on_scan_video_dir_clicked(NULL);
+
+
+        }
+

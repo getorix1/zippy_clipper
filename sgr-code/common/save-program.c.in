@@ -1,0 +1,67 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Feb 6, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+
+void	save_program() {
+
+	char tmp[4096];
+
+	FILE *f1 = fopen(Program_List, "w");
+
+	if (f1 == NULL) { printf("Error opening program.lst on save\n"); }
+
+	else {
+		printf("*** saving program list\n");
+		for (int i = 0; i < PROGRAM_MAX; i++) {
+			if (strlen(ProgramArray[i])) {
+				fprintf(f1,"%s\n",  ProgramArray[i]);
+				printf("%s\n",  ProgramArray[i]);
+				}
+			}
+
+		fclose(f1);
+		printf("Program list saved to %s\n", Program_List);
+		}
+
+	}
+

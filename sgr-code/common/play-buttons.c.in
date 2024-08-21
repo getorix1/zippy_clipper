@@ -1,0 +1,90 @@
+/*y++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2023, 2024
+#+      by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	August 4, 2024
+
+	#include "includes.h"
+	#include "common-externs.h"
+
+	#define SLASH '/'
+
+//--------------- PLAY BUTTON signals program rows in edit panel
+
+//	on_button3_clicked on_button9_clicked on_button11_clicked on_button13_clicked
+//	on_button2_clicked on_button6_clicked on_button8_clicked on_button10_clicked
+//	on_button12_clicked on_button14_clicked on_button5_clicked on_button15_clicked
+//	
+//----------------------------------------------------------------------------------------------------------
+
+#define EDIT_PANEL_PLAY(BTN_NBR,FILE_NAME) \
+        gboolean on_button ## BTN_NBR ##_button_press_event \
+                (GtkButton *btn, GdkEventButton *event, gpointer user_data) { \
+                if (event->button == 1 ) return FALSE; /* left */ \
+		char tmp[8192]; sprintf(tmp, "ffplay \"%s\" &", ProgramArray[FILE_NAME]); \
+                printf("%s\n", tmp); system(tmp); \
+                return TRUE; \
+                } \
+\
+	void on_button ## BTN_NBR ##_clicked (GtkButton *button, GtkEntry *user_data) { \
+		if (! no_move) {  \
+			moveToTop(FILE_NAME); \
+			if (SP->begin < SP->scount) SP->begin=SP->begin+1; /* compensate button movement */ \
+			} \
+		if (SP->playProgram) { \
+			/* SP->begin = FILE_NAME; */ DisplayProgramButtons(); \
+			return; \
+			} \
+		if (! no_move) { \
+			programData[0]->play = 0; \
+			SP->NowPlaying = 0; \
+			strcpy(SP->CurrentPlay,""); \
+			PlayClip(button, (GtkEntry *) ProgramArray[0],-1); \
+			DisplayProgramButtons(); \
+			SP->NowPlaying = 0; \
+			}\
+		else { \
+			programData[FILE_NAME]->play = 0; \
+			SP->NowPlaying = FILE_NAME; \
+			for (int i = 0; i < PROGRAM_MAX; i++) programData[i]->play = 0; \
+			programData[FILE_NAME]->play = 1; \
+			strcpy(SP->CurrentPlay,""); \
+			PlayClip(button, (GtkEntry *) ProgramArray[FILE_NAME], -1); \
+			SP->NowPlaying = FILE_NAME; \
+			DisplayProgramButtons(); \
+			}\
+		} \
+
+// create the code signal handlers
+
+	EDIT_PANEL_PLAY(3,  SP->begin+0)  EDIT_PANEL_PLAY(8,  SP->begin+1)
+	EDIT_PANEL_PLAY(9,  SP->begin+2)  EDIT_PANEL_PLAY(10, SP->begin+3)
+	EDIT_PANEL_PLAY(11, SP->begin+4)  EDIT_PANEL_PLAY(12, SP->begin+5)
+	EDIT_PANEL_PLAY(13, SP->begin+6)  EDIT_PANEL_PLAY(14, SP->begin+7)
+	EDIT_PANEL_PLAY(2,  SP->begin+8)  EDIT_PANEL_PLAY(5,  SP->begin+9)
+	EDIT_PANEL_PLAY(6,  SP->begin+10) EDIT_PANEL_PLAY(15, SP->begin+11)
+

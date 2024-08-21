@@ -1,0 +1,258 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+      by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	July 10, 2024
+
+#ifndef GLOBAL_VARS_H
+#define GLOBAL_VARS_H
+
+char session_type[32];
+
+FILE *s1, *s2;
+
+char rename_prefix[4096], rename_fname[1034], rename_old[8192];
+double DRAW_HEIGHT = 0.0;
+double	GRAPH_BAR_WIDTH = 2.0;
+int             e7Row,e8Row,e9Row,e10Row,e11Row,e12Row,e13Row,e14Row,e2Row,e3Row,e4Row,e15Row;
+char            cutRow[512], top1[512], top2[512], top3[512]; // row file name holders
+
+int             bx1 = 0, bx2 = 1, bx3 = 2, bx4 = 3, bx5 = 4, bx6 = 5,
+                bx7 = 6, bx8 = 7, bx9 = 8, bx10 = 9, bx11 = 10, bx12 = 0;
+
+int large_pause = 0;	// size of pause frame(s)
+
+char past1[4096] = "";	// overlay
+int past_row1 = -1;	// overlay
+
+char past2[4096] = "";	// overlay
+int past_row2 = -1;	// overlay
+
+int vlc_down_pressed = 0;
+int vlc_up_pressed = 0;
+int ignore_me = 0;
+int left_crop_flg = 0;
+time_t		t_position;
+// int		cursor_mark = START_TO_CURSOR;
+double		TOWER_CIRCLE_FACTOR = 0.0;
+GdkColor        background_color;
+time_t		clip_start;
+time_t		clip_end;
+int 		text_scale;
+int		clip_duration = 10;
+int		trans_duration = 2;
+int		advance_flg = 0;
+int		advance1_flg = 0;
+int		mpv_socket_running = 0;
+int		band_start = 0;
+int		band_width = 1;
+int		decorate_flag = 0;
+int		LeftFlg = 0;
+int             cutPlay;
+int		sprinkleCount = 10;
+int             cutPlayed;
+int             *AudioSystem;
+int             SaveFlg;
+int             flg35 = 0 ;
+int		button_flag = 0;
+// int             timer_res = 100;
+int             firstTime = 1;
+int             AGC = 1;
+int             AGC1 = 1; 
+int             Topgain; // maximum gain by AGC
+int		video_file = 0;
+int		clear_drawV_flag = 0;
+long	rotation;
+
+int clip_x_coord = 0, clip_y_coord = 0;
+
+int	text_x, text_y;
+
+//#include "structures.h"
+
+struct shared_memory *SP;
+
+struct APW	*widgets;
+
+struct		ST **programData;
+
+double curLevel;
+char		**ProgramArray;
+int		*programPlayed; // play count
+int		*programTime;
+int		Markers[100];
+int		markx = 0;
+char		**AlbumArray;
+int		AlbumButton[12];
+int		AlbumBegin = -1;
+
+// playlist play check boxes state
+
+int		c1state = 0;
+int		c2state = 0;
+int		c3state = 0;
+int		c4state = 0;
+int		c5state = 0;
+int		c6state = 0;
+int		c7state = 0;
+int		c8state = 0;
+int		c9state = 0;
+int		c10state = 0;
+int		c11state = 0;
+int		c12state = 0;
+
+//int                     L_Clipping = 0; // have we clipped in most recent tick?
+//int                     R_Clipping = 0; // have we clipped in most recent tick?
+
+int             clip_changed = 0;
+int             showSys = 1;
+int             reCenter = 1; // tile/edit panel display current selection in middle of page
+double          second = 0;
+double          minute = 0;
+double          hour = 0;
+char            time_string[128];
+int             no_move = 1;
+int             save_flg = 0;
+int             graph_type = SPECTRUM;
+//int             connect_graph = 0;
+int             bulls_eye = 0;
+int             bulls_eye1 = 0;
+int             bar_spots = 0;
+int             ray_count = 2;
+int             slide_time = 10;
+int		slide_timer = 0;
+gint            x,y;
+int             slide_ready = 0;
+int             pgm_flip = 0;
+int             copyClipRow;
+float            Eq_Vol = 0.0; // pre-amp volume level
+double                  radialStart = 1.12;
+double                  radialDecay = 0.04;
+int             MaxAudioSample = 0;
+GdkColor	webplay; // default tile colors
+//int             showArc = 1; // meter arcs
+int             showFan = 0; // meter fan meters
+time_t          timeRemaining = 0;
+int             randomize_flg = 0;
+int             Cycle = 0;
+int             PlayPgm_flg = 0;
+int             slides = 0;
+int             show_covers = 1; // albums
+int     lastDir = -1;
+char    Music_Home_Directory[16000];
+char    Program_List[1024];
+char    Album_List[2048];
+char    Code_Home[2048];
+int     which_meters = 1; // 0 = VU; 1 = digital
+//int     rand_colors = 1;
+double  mic_max = 100;
+int		talk_button =  GDK_KEY_Control_R; // right ctrl
+int     	talk_button1 =  -1; // not in use
+double		RAMP_SPEED_UP = 1.0;
+double		RAMP_SPEED_DOWN = 0.5;
+double		SWEEPER_REDUCE = 100.0; // % level to reduce volume during sweeper play
+double          master_volume = INIT_VOLUME;  // main volume level
+int             drag_source = -1, drag_target = -1;
+int             haltProgram_flg = 0;
+int             scan_in_progress = 0;
+int     ALBUM_COVER_UPDATE_TIME = 10; // initial slide duration in seconds
+int             fixed1Width, SideSlideX = 2, SideSlideY = 30;
+
+//---------------------------------------------------------------------
+//      Maximum number of elements in the program list and album list
+//---------------------------------------------------------------------
+
+int     PROGRAM_MAX=16000; // max number of pointers to titles
+int     ALBUM_MAX=4096; // max number of pointers to titles
+double SHADOW = 3.0;
+double		rayRotate = 0;
+
+double          lastR1[100];
+double          lastR2[100];
+double          lastR3[100];
+double          lastR4[100];
+double          lastR5[100];
+double          lastR6[100];
+double          lastR7[100];
+double          lastR8[100];
+double          lastR9[100];
+double          lastRA[100];
+
+double          G_OFF, G_OFF1, G_OFF_FREQ;
+
+int             draw_mode = DRAWS;
+double          bar_space = 6.0;
+
+//----------------
+//      Audio
+//----------------
+
+//#define INIT_VOLUME 112         // startup percent of normal volume
+#define SAMPLE_MAX 100.0
+
+double  AudioCalibrate = 1.0;
+
+double          MIC_THRESHOLD = 20.0; // level at which reduction occurs
+double          mic_volume = 10.0; // microphone volume setting
+
+
+// key_t        key;    // used with shared memory
+int             Meters;
+float           ClipLevel = 88.0;
+int             obsFactor = 100;
+char            obsIndex[16] = ""; // not found yet
+char            *Sharedstr;
+char            directory[1024]; // directory where pgm is running
+int             FRAME =  1;
+//int             mono_graph = 0;
+int             mic_level = 0; // accumulated mic levels
+int             SlideLocation = -1;
+#define         SLIDE_MAX 4096 // maximum number of slides
+char            directories[5][1024] = {0};
+
+        double cropLeft = 0.0, cropRight = 0.0;
+        double cropTop = 0.0, cropBottom = 0.0;
+        double infade = 0.0, outfade = 0.0;
+
+        unsigned int frame_height = 0;
+        unsigned int frame_width = 0;
+
+        double hframe_ratio = 1.0;
+        double vframe_ratio = 1.0;
+
+        int x_offset = 0;
+        int y_offset = 0;
+
+
+
+void spectrum();
+
+
+//-------------------
+
+
+#endif
