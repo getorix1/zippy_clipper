@@ -1,0 +1,32 @@
+button { 
+background-color: red;
+    min-height: 1px;
+    min-width: 1px;
+   padding: 0px;
+   border: 0px solid;
+   border-width: 0px;
+  }
+stackswitcher {
+    -GtkToolButton-icon-spacing: 1;
+    -gtk-icon-shadow: -2px 2px alpha(black, 0.5);
+    min-height: 1px;
+    min-width: 1px;
+    background-color: blue;
+    padding: 0px 0px 0px 0px;
+border: 1px;
+margin-left: 0px;
+	}
+iconview { padding: 0px 0px 0px 0px; background-color: #ff0000; }
+image {
+      padding-left: 0px;
+      padding-right: 0px;
+      padding-top: 3px;
+      padding-bottom: 3px; }
+
+.stackswitcher > button.icon-button {
+    min-height: 1px;
+    min-width: 1px;
+      padding: 0px 0px 0px;
+}
+
+

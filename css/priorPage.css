@@ -1,0 +1,20 @@
+/* default coloring of widgets */
+* {
+    background-color: #bbbbdd;    
+}
+
+button {
+    color: #000000;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-radius: 6px;
+    padding-right: 2px;
+    padding-left: 2px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background-image: radial-gradient(ellipse at center, white 20%, royalblue 80%);
+}
+
+button:active {background-image: radial-gradient(ellipse at center, royalblue 20%, white 80%); }

@@ -1,0 +1,16 @@
+/* default coloring of widgets */
+* {
+    background-color: #bbbbdd;    
+}
+
+button {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    padding-right: 4px;
+    padding-left: 4px;
+    background-image: radial-gradient(ellipse at center, white 20%, gray 80%);
+}
+
+button:active, button.toggle-button.selected, button.toggle-button:active, button.toggle:checked {background-image: radial-gradient(ellipse at center, gray 20%, white 80%); }
