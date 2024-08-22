@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 
-August 3, 2024
+August 21, 2024
 
 ------------------------------------------------------------------------------
 
@@ -71,7 +71,7 @@ To compile and run in Linux:
 
 	2. Depending on your target system, run ./configure:
 
-		./configure --with-system=debian (the default)
+		./configure all --with-system=debian (the default)
 
 			Note: if you are compiling on a Debian based system,
 			      you do not need to specify --with-system=debian
@@ -82,11 +82,11 @@ To compile and run in Linux:
 
 	3. Compile the system:
 
-		make encoder-bin Zippy-bin -B
+		make all -B
 
 	   Optional - if your machine has 4 processors:
 
-		make encoder-bin Zippy-bin -B -j 4
+		make all -B -j 4
 
 	   Alternatively
 
