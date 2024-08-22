@@ -1,0 +1,178 @@
+/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Glade / Gtk Programming
+#+
+#+     Copyright (C) 2019, 2024 by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     http://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+// July 12, 2024
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <gtk/gtk.h>
+#include <sys/ipc.h>
+#include <math.h>
+#include <sys/shm.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <fftw3.h>
+#include <gtk/gtkx.h>
+#include <time.h>
+#include <ctype.h>
+#include <sys/mman.h>
+#include <sys/shm.h>
+
+#include "functions.h"
+
+#include "global-variables.h"
+
+//----------------------------
+//	called from Zippy.c
+//----------------------------
+
+	GtkWidget *fixed1a;
+
+int main_vu() {
+
+
+	signal(SIGPIPE, SIG_IGN);
+
+	context_source = NULL;
+	context_sink = NULL;
+	stream_sink = NULL;
+	stream_source = NULL;
+	device_name_source = NULL;
+	device_name_sink = NULL;
+	device_description_source = NULL;
+	device_description_sink = NULL;
+	int record = 0;
+	showArc = 0;
+	showB2 = 1;
+	connect_graph = TRUE; // whether to connect the bar graph bars
+	spectrum_width = 1;
+	display_cover = 0;
+	no_graph = 1; // show spectrum/vol graph
+	legacy_vumeters = 0;  // show vu meters
+	mono_graph = 0;
+	timer_res = 50;
+	no_meters = 0;
+	LAT = 3;
+	rand_colors = 0;
+	strcpy(bg_color,"black");
+	L_Clipping = 0;
+	R_Clipping = 0;
+	style = NARROW_SPECTRUM; // narrow
+	FACTOR = 350.0;
+	Lx = 0.1;
+	Rx = 0.1;
+	strcpy(default_source,"");
+	strcpy(default_sink,"");
+	no_microphone = 1;
+	exchange = 0;
+	super_bars = 1;         // bars above graphs
+	MaxR[0] = 0.0;
+	MaxR[1] = 0.0;
+	MaxL[0] = 0.0;
+	MaxL[1] = 0.0;
+	MaxM[0] = 0.0;
+	MaxM[1] = 0.0;
+	MaxRM = 0.0;
+	MaxLM = 0.0;
+	MaxMM = 0.0;
+	MRr = 0;
+	MLr = 0;
+	MMr = 0;
+	ML = 0.0;
+	MR = 0.0;
+	Balance = 0.0;
+	MLx = 0.0;
+	MRx = 0.0;
+
+	style = NARROW_SPECTRUM; 
+
+	showArc = 0;
+	display_bars = 1;
+	super_bars = 1;
+	connect_graph = TRUE;
+	style = 99;
+
+#include "sink.h"
+
+        g_timeout_add(timer_res, (GSourceFunc) pulse_timer_handler, NULL);
+
+                gtk_fixed_move (
+                                GTK_FIXED(fixed1a),
+                                draw2,
+                                1, 20);
+
+
+	return EXIT_SUCCESS;
+	}
+
+
+void	on_show_arcs_toggled(GtkWidget *w) {
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+			showArc = 1;
+		else showArc = 0;
+	}
+
+void	on_show_bars_toggled(GtkWidget *w) {
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+		display_bars = 1;
+	else display_bars = 0;
+	}
+
+void	on_sup_bars_toggled(GtkWidget *w) {
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+		super_bars = 0;
+	else super_bars = 1;
+	}
+
+void	on_connect_toggled(GtkWidget *w) {
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+		connect_graph = TRUE;
+	else connect_graph = FALSE;
+	}
+
+void	on_show_freq_toggled(GtkWidget *w) {
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+		style = NARROW_SPECTRUM; // narrow
+	else style = 99;
+	}
+
+
+
+
+
+
+
+

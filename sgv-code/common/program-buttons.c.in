@@ -1,0 +1,284 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Feb 7, 2024
+
+	#include "includes.h"
+	#include "common-externs.h"
+	#define SLASH '/'
+
+
+// ----------------------------------------------------------------
+// program tiles content load
+// ----------------------------------------------------------------
+
+void	DisplayProgramButtons() {
+
+	char name[2048], tmp[2048];
+
+//-------------------------------------------------------------------
+//	The numbers in these variables tell us which element from
+// 	ProgramArray[] is in the indicated row. The rows are not in
+//	numeric order.
+//-------------------------------------------------------------------
+
+	e7Row  = -1; // I need to learn how to count.
+	e8Row  = -1; // These are the Edit panel row numbers
+	e9Row  = -1; // in order form first to last.
+	e10Row = -1;
+	e11Row = -1;
+	e12Row = -1;
+	e13Row = -1;
+	e14Row = -1;
+	e2Row  = -1;
+	e3Row  = -1;
+	e4Row  = -1;
+	e15Row = -1;
+
+//-------------------------------------------------------------------
+//	the bx* vars are used later to remember the ProgramArray
+//	indices of of the currently visible tiles when the
+//	timing data is superimposed.
+//-------------------------------------------------------------------
+
+	sprintf(tmp, "Rows=%d", SP->scount);
+	gtk_label_set_text(sp_count, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 0);
+	gtk_label_set_text(row_nbr0, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 1);
+	gtk_label_set_text(row_nbr1, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 2);
+	gtk_label_set_text(row_nbr2, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 3);
+	gtk_label_set_text(row_nbr3, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 4);
+	gtk_label_set_text(row_nbr4, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 5);
+	gtk_label_set_text(row_nbr5, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 6);
+	gtk_label_set_text(row_nbr6, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 7);
+	gtk_label_set_text(row_nbr7, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 8);
+	gtk_label_set_text(row_nbr8, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 9);
+	gtk_label_set_text(row_nbr9, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 10);
+	gtk_label_set_text(row_nbr10, tmp);
+
+	sprintf(tmp, "%2d", SP->begin + 11);
+	gtk_label_set_text(row_nbr11, tmp);
+
+	programButtonLoad(button3,  bx1 =  SP->begin + 0);
+	programButtonLoad(button8,  bx2 =  SP->begin + 1);
+	programButtonLoad(button9,  bx3 =  SP->begin + 2);
+	programButtonLoad(button10, bx4 =  SP->begin + 3);
+	programButtonLoad(button11, bx5 =  SP->begin + 4);
+	programButtonLoad(button12, bx6 =  SP->begin + 5);
+	programButtonLoad(button13, bx7 =  SP->begin + 6);
+	programButtonLoad(button14, bx8 =  SP->begin + 7);
+	programButtonLoad(button2,  bx9 =  SP->begin + 8);
+	programButtonLoad(button5,  bx10 = SP->begin + 9);
+	programButtonLoad(button6,  bx11 = SP->begin + 10);
+	programButtonLoad(button15, bx12 = SP->begin + 11);
+
+//	if (strlen(SP->CurrentPlay) && strcmp(SP->CurrentPlay, ProgramArray[SP->begin + OFF]) == 0 ) 
+//        css_set1(cssProvider_entry2, GTK_WIDGET( entry## NBR )); 
+
+#define ENTRY_COLOR(NBR, OFF)  \
+        if (programData[SP->begin + OFF]->play > 0) css_set1(cssProvider_entry2a, GTK_WIDGET( entry## NBR )); \
+        else css_set1(cssProvider_entry1, GTK_WIDGET( entry## NBR )); 
+
+
+        ENTRY_COLOR(7,0)  ENTRY_COLOR(8,1)  ENTRY_COLOR(9,2)  ENTRY_COLOR(10,3)
+        ENTRY_COLOR(11,4) ENTRY_COLOR(12,5) ENTRY_COLOR(13,6) ENTRY_COLOR(14,7)
+        ENTRY_COLOR(2,8)  ENTRY_COLOR(3,9)  ENTRY_COLOR(4,10)  ENTRY_COLOR(15,11)
+
+
+//------------------------------
+//	set 'play' checkboxes
+//------------------------------
+
+	if (programData[SP->begin + 0]->play > 0) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check1),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check1),FALSE);
+
+	if (programData[SP->begin+1]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check2),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check2),FALSE);
+
+	if (programData[SP->begin+2]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check3),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check3),FALSE);
+
+	if (programData[SP->begin+3]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check4),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check4),FALSE);
+
+	if (programData[SP->begin+4]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check5),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check5),FALSE);
+
+	if (programData[SP->begin+5]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check6),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check6),FALSE);
+
+	if (programData[SP->begin+6]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check7),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check7),FALSE);
+
+	if (programData[SP->begin+7]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check8),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check8),FALSE);
+
+	if (programData[SP->begin+8]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check9),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check9),FALSE);
+
+	if (programData[SP->begin+9]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check10),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check10),FALSE);
+
+	if (programData[SP->begin+10]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check11),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check11),FALSE);
+
+	if (programData[SP->begin+11]->play > 0 ) 
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check12),TRUE);
+	else	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(check12),FALSE);
+
+	}
+
+//---------------------------------------
+//	load content into program button
+//---------------------------------------
+
+void	programButtonLoad(GtkWidget *button, int nbr) {
+
+	char name[4096] = "", tmp[4096] = "", *p1, dur[32] = "0";
+
+	strncpy(name, ProgramArray[nbr], 4096);
+
+	int i;
+
+	if (programTime[nbr] < 0) {
+		i = GetTime(name);
+		if (i < 0) i = 0;
+		}
+
+	else i = programTime[nbr];
+
+	sprintf(dur, "%d", i); // duration
+	
+	for (i = strlen(name); i > 0; i--)
+		if (name[i] == '/') break;
+
+	if (name[i] == '/') i++; 
+
+	if (filetype(ProgramArray[nbr]) != URL) strncpy(tmp, &name[i], 4096);
+
+	else {
+		strcpy(tmp, "URL ");
+		strcat(tmp, &name[i]);
+		}
+
+	hexcleaner(tmp);
+
+	if (button == button3) {
+		e7Row = nbr;
+		gtk_entry_set_text (entry7, (gchar *) tmp);
+		gtk_label_set_text (time_7, dur);
+		}
+	else if (button == button8) {
+		e8Row = nbr;
+		gtk_entry_set_text (entry8, (gchar *) tmp);
+		gtk_label_set_text (time_8, dur);
+		}
+	else if (button == button9) {
+		e9Row=nbr;
+		gtk_entry_set_text (entry9, (gchar *) tmp);
+		gtk_label_set_text (time_9, dur);
+		}
+	else if (button == button10) {
+		e10Row=nbr;
+		gtk_entry_set_text (entry10, (gchar *) tmp);
+		gtk_label_set_text (time_10, dur);
+		}
+	else if (button == button11) {
+		e11Row = nbr;
+		gtk_entry_set_text (entry11, (gchar *) tmp);
+		gtk_label_set_text (time_11, dur);
+		}
+	else if (button == button12) {
+		e12Row=nbr;
+		gtk_entry_set_text (entry12, (gchar *) tmp);
+		gtk_label_set_text (time_12, dur);
+		}
+	else if (button == button13) {
+		e13Row=nbr;
+		gtk_entry_set_text (entry13, (gchar *) tmp);
+		gtk_label_set_text (time_13, dur);
+		}
+	else if (button == button14) {
+		e14Row = nbr;
+		gtk_entry_set_text (entry14, (gchar *) tmp);
+		gtk_label_set_text (time_14, dur);
+		}
+	else if (button == button2) { // s9
+		e2Row=nbr;
+		gtk_entry_set_text (entry2, (gchar *) tmp);
+		gtk_label_set_text (time_2, dur);
+		}
+	else if (button == button5) { // s10
+		e3Row=nbr;
+		gtk_entry_set_text (entry3, (gchar *) tmp);
+		gtk_label_set_text (time_3, dur);
+		}
+	else if (button == button6) { // s11
+		e4Row=nbr;
+		gtk_entry_set_text (entry4, (gchar *) tmp);
+		gtk_label_set_text (time_4, dur);
+		}
+	else if (button == button15) { // s12
+		e15Row = nbr;
+		gtk_entry_set_text (entry15, (gchar *) tmp);
+		gtk_label_set_text (time_15, dur);
+		}
+	}
+

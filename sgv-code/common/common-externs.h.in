@@ -1,0 +1,599 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+// August 6, 2024
+
+#ifndef COMMON_EXTERNS_H
+#define COMMON_EXTERNS_H
+
+#include "includes.h"
+
+#include "structures.h"
+#include "defines.h"
+#include "common-fcn-headers.h"
+
+extern int large_pause;	// size of pause frame(s)
+
+extern int run_result_flag;
+
+extern int vlc_down_pressed;
+extern int vlc_up_pressed;
+
+extern int button_flag;
+
+extern char past1[4096] ;  // overlay
+extern int past_row1 ;     // overlay
+
+extern char past2[4096];  // overlay
+extern int past_row2;     // overlay
+
+extern GtkWidget *row_nbr0;
+extern GtkWidget *row_nbr1;
+extern GtkWidget *row_nbr2;
+extern GtkWidget *row_nbr3;
+extern GtkWidget *row_nbr4;
+extern GtkWidget *row_nbr5;
+extern GtkWidget *row_nbr6;
+extern GtkWidget *row_nbr7;
+extern GtkWidget *row_nbr8;
+extern GtkWidget *row_nbr9;
+extern GtkWidget *row_nbr10;
+extern GtkWidget *row_nbr11;
+extern GtkWidget *frames_per_second;
+extern GtkWidget *play_clip1;
+extern GtkWidget *dismiss_zippy_says;
+extern GtkWidget *pause_frames;
+extern GtkWidget *drawV1;
+extern GtkWidget *Top1;
+extern GtkWidget *sel1;
+extern GtkWidget *sel2;
+extern GtkWidget *sel3;
+extern GtkWidget *sel4;
+extern GtkWidget *esel1;
+extern GtkWidget *esel2;
+extern GtkWidget *esel3;
+extern GtkWidget *esel4;
+extern GtkWidget *video_adj_box;
+extern GtkWidget *settings_dlg;
+extern GtkWidget *overlay_end_lbl;
+extern GtkWidget *overlay_end;
+extern GtkWidget *overlay_box;
+extern GtkWidget *frame_forward1;
+extern GtkWidget *sp_count;
+extern GtkWidget *loop_stream;
+extern GtkWidget *out_fade;
+extern GtkWidget *in_fade;
+extern int left_crop_flg;
+extern char rename_prefix[4096], rename_fname[1034], rename_old[8192];
+extern GtkWidget *granularity;
+extern GtkWidget *zippy_toy;
+extern GtkWidget *frame_image;
+extern GtkWidget *frame_image1;
+extern GtkWidget *frame_image2;
+extern GtkWidget *frame_image3;
+extern GtkWidget *frame_image4;
+extern GtkWidget *frame_image5;
+extern GtkWidget *flbl1;
+extern GtkWidget *flbl2;
+extern GtkWidget *flbl3;
+extern GtkWidget *flbl4;
+extern GtkWidget *flbl5;
+extern GtkWidget *pgedit_back;
+extern GtkWidget *rantran;
+extern GtkWidget *select_all;
+extern GtkWidget *clear_all;
+extern GtkWidget *dir_label;
+extern GtkWidget *file_name_entry;
+extern GtkWidget *file_name_cancel;
+extern GtkWidget *file_name_ok;
+extern GtkWidget *file_name;
+extern GtkWidget *monochrome;
+extern GtkWidget *insert_text;
+extern GtkWidget *run_result;
+extern GtkWidget *sharp_x;
+extern GtkWidget *sharp_y;
+extern GtkWidget *sharp_amount;
+
+extern long rotation;
+extern int clip_x_coord, clip_y_coord;
+extern int ignore_me;
+extern time_t t_position;
+extern double TOWER_CIRCLE_FACTOR;
+extern int clip_duration;
+extern int trans_duration;
+extern int ALBUM_MAX;
+extern double DRAW_HEIGHT;
+extern double rayRotate;
+extern int text_x, text_y;
+extern int advance_flg;
+extern int text_scale;
+extern int advance1_flg;
+extern int video_file;
+extern int clear_drawV_flag;
+extern int no_microphone;
+extern int band_width;
+extern int firstTime;
+extern int mpv_socket_running;
+extern int band_start;
+extern int decorate_flag;
+extern int clip_changed;
+extern int windows_audio;
+extern int which_meters;
+extern GtkColorButton	*back_color;;
+extern GtkColorButton	*text_color;;
+extern GtkWidget        *edge_canny;
+extern GtkWidget        *text_image;
+extern GtkWidget        *text_start;
+extern GtkWidget        *text_end;
+extern GtkWidget        *text_fixed;
+extern GtkWidget        *text_frame;
+extern GtkWidget        *text_label;
+extern GtkWidget        *edge_wires;
+extern GtkWidget        *edge_colormix;
+extern GtkWidget        *view_log;
+extern GtkWidget        *clip_length;
+extern GtkWidget        *time_7;
+extern GtkWidget        *time_8;
+extern GtkWidget        *time_9;
+extern GtkWidget        *time_10;
+extern GtkWidget        *time_11;
+extern GtkWidget        *time_12;
+extern GtkWidget        *time_13;
+extern GtkWidget        *time_14;
+extern GtkWidget        *time_2;
+extern GtkWidget        *time_3;
+extern GtkWidget        *time_4;
+extern GtkWidget        *time_15;
+extern GtkWidget        *top1_back;
+extern GtkWidget        *top1_back1;
+extern GtkWidget        *join_group;
+extern GtkWidget        *join_group1;
+extern GtkWidget        *join_group2;
+extern GtkWidget        *join_group3;
+extern GtkWidget        *join_group4;
+extern GtkWidget        *join_group5;
+extern GtkWidget        *join_group6;
+extern GtkWidget        *join_group7;
+extern GtkWidget        *join_group8;
+extern GtkWidget        *join_group9;
+extern GtkWidget        *join_group10;
+extern GtkWidget        *join_group11;
+extern GtkWidget        *join_group12;
+extern GtkWidget        *join_group13;
+extern GtkWidget        *join_group14;
+extern GtkWidget        *join_group15;
+extern GtkWidget        *join_group16;
+extern GtkWidget        *join_group17;
+extern GtkWidget        *join_group18;
+extern GtkWidget        *join_group19;
+extern GtkWidget        *join_group20;
+extern GtkWidget        *join_group21;
+extern GtkWidget        *vid_custom;
+extern GtkWidget        *vid_640x480;
+extern GtkWidget        *vid_720x480;
+extern GtkWidget        *vid_1280x720;
+extern GtkWidget        *vid_1920x1080;
+extern GtkWidget        *vid_3840x2160;
+extern GtkWidget *crop_left;
+extern GtkWidget *crop_right;
+extern GtkWidget *crop_top;
+extern GtkWidget *crop_bottom;
+extern GtkWidget *frame_next;
+extern GtkWidget *snapshot;
+extern GtkWidget *posLbl;
+extern GtkWidget *five_speed;
+extern GtkWidget *quad_speed;
+extern GtkWidget *tripple_speed;
+extern GtkWidget *double_speed;
+extern GtkWidget *full_speed;
+extern GtkWidget *half_speed;
+extern GtkWidget *quarter_speed;
+extern GtkWidget *eighth_speed;
+extern GtkWidget *strip_audio;
+extern GtkWidget *join_videos;
+extern GtkWidget *pg2;
+extern GtkWidget *dbox4_tv;
+extern GtkWidget *dbox4_sw;
+extern GtkTextBuffer *TextBuffer;
+
+extern GtkWidget *preampLbl;
+extern GtkWidget *g_dbox4;
+extern GtkWidget *g_dbox5;
+extern GtkWidget *openView;
+extern GtkWidget *TopTop;
+extern GtkWidget *fixed1;
+extern GtkWidget *all_settings;
+extern GtkWidget *edit_window_button;
+extern GtkWidget *slides_window_button;
+extern GtkWidget *float_program;
+extern GtkWidget *haltProgram;
+extern GtkWidget *vlcPosition;
+extern GtkWidget *currentFile;
+extern GtkWidget *slides_window;
+extern GtkWidget *edit_window;
+extern GtkWidget *settings_window;
+extern GtkWidget *pgm_window;
+extern GtkWidget *controls;
+extern GtkWidget *drawV;
+extern GtkWidget *button10;
+extern GtkWidget *button11;
+extern GtkWidget *button12;
+extern GtkWidget *button13;
+extern GtkWidget *button14;
+extern GtkWidget *button15;
+extern GtkWidget *button2;
+extern GtkWidget *button3;
+extern GtkWidget *button5;
+extern GtkWidget *button6;
+extern GtkWidget *button8;
+extern GtkWidget *button9;
+extern GtkWidget *check1;
+extern GtkWidget *check10;
+extern GtkWidget *check11;
+extern GtkWidget *check12;
+extern GtkWidget *check2;
+extern GtkWidget *check3;
+extern GtkWidget *check4;
+extern GtkWidget *check5;
+extern GtkWidget *check6;
+extern GtkWidget *check7;
+extern GtkWidget *check8;
+extern GtkWidget *check9;
+extern GtkWidget *choose1;
+extern GtkWidget *dir_chooser;
+extern GtkWidget *classical;
+extern GtkWidget *clevel;
+extern GtkWidget *club;
+extern GtkWidget *currentFile;
+extern GtkWidget *dance;
+extern GtkWidget *del10;
+extern GtkWidget *del11;
+extern GtkWidget *del12;
+extern GtkWidget *del13;
+extern GtkWidget *del14;
+extern GtkWidget *del15;
+extern GtkWidget *del2;
+extern GtkWidget *del3;
+extern GtkWidget *del4;
+extern GtkWidget *del7;
+extern GtkWidget *del8;
+extern GtkWidget *del9;
+extern GtkEntry *OverlayEntry1;
+extern GtkEntry *OverlayEntry2;
+extern GtkEntry *OverlayEntry3;
+extern GtkEntry  *entry1;
+extern GtkEntry  *entry10;
+extern GtkEntry  *entry11;
+extern GtkEntry  *entry12;
+extern GtkEntry  *entry13;
+extern GtkEntry  *entry14;
+extern GtkEntry  *entry15;
+extern GtkEntry  *entry2;
+extern GtkEntry  *entry3;
+extern GtkEntry  *entry4;
+extern GtkEntry  *entry7;
+extern GtkEntry  *entry8;
+extern GtkEntry  *entry9;
+extern GtkWidget *eqReset;
+extern GtkWidget *rampSpeedDown;
+extern GtkWidget *rampSpeedUp;
+extern GtkWidget *scroll;
+extern GtkWidget *sgrStudio;
+extern GtkWidget *sort;
+extern GtkWidget *sort1;
+extern GtkWidget *up1;
+extern GtkWidget *up10;
+extern GtkWidget *up11;
+extern GtkWidget *up12;
+extern GtkWidget *up2;
+extern GtkWidget *up3;
+extern GtkWidget *up4;
+extern GtkWidget *up5;
+extern GtkWidget *up6;
+extern GtkWidget *up7;
+extern GtkWidget *up8;
+extern GtkWidget *up9;
+extern GtkWidget *lbl1;
+extern GtkWidget *lbl10;
+extern GtkWidget *lbl11;
+extern GtkWidget *lbl12;
+extern GtkWidget *lbl2;
+extern GtkWidget *lbl22;
+extern GtkWidget *lbl23;
+extern GtkWidget *L1;
+extern GtkWidget *L10;
+extern GtkWidget *L1000;
+extern GtkWidget *L12000;
+extern GtkWidget *L14000;
+extern GtkWidget *L16000;
+extern GtkWidget *L170;
+extern GtkWidget *L2;
+extern GtkWidget *L3;
+extern GtkWidget *L3000;
+extern GtkWidget *L310;
+extern GtkWidget *L4;
+extern GtkWidget *L5;
+extern GtkWidget *L6;
+extern GtkWidget *L60;
+extern GtkWidget *L600;
+extern GtkWidget *L6000;
+extern GtkWidget *L7;
+extern GtkWidget *L8;
+extern GtkWidget *L9;
+extern GtkWidget *flat;
+extern GtkWidget *fullBass;
+extern GtkWidget *fullBassTreble;
+extern GtkWidget *fullTreble;
+extern GtkWidget *lbl1;
+extern GtkWidget *lbl10;
+extern GtkWidget *lbl11;
+extern GtkWidget *lbl12;
+extern GtkWidget *lbl14;
+extern GtkWidget *lbl15;
+extern GtkWidget *lbl16;
+extern GtkWidget *lbl17;
+extern GtkWidget *lbl18;
+extern GtkWidget *lbl19;
+extern GtkWidget *lbl2;
+extern GtkWidget *lbl20;
+extern GtkWidget *lbl21;
+extern GtkWidget *lbl22;
+extern GtkWidget *lbl23;
+extern GtkWidget *lbl24;
+extern GtkWidget *lbl25;
+extern GtkWidget *lbl3;
+extern GtkWidget *lbl4;
+extern GtkWidget *lbl5;
+extern GtkWidget *lbl6;
+extern GtkWidget *lbl7;
+extern GtkWidget *lbl8;
+extern GtkWidget *lbl9;
+extern GtkEntry  *g_dbox5Entry;
+extern GtkAdjustment  *adjustment37;
+extern GtkAdjustment  *adjustment33;
+extern GtkAdjustment  *adjustment32;
+extern GtkAdjustment  *adjustment31;
+extern GtkAdjustment  *adjustment30;
+extern GtkAdjustment  *adjustment29;
+extern GtkAdjustment  *adjustment28;
+extern GtkAdjustment  *adjustment27;
+extern GtkAdjustment  *adjustment26;
+extern GtkAdjustment  *adjustment25;
+extern GtkAdjustment  *adjustment23;
+extern GtkAdjustment  *adjustment22;
+extern GtkAdjustment  *adjustment21;
+extern GtkAdjustment  *adjustment20;
+extern GtkAdjustment  *adjustment40;
+extern GtkAdjustment  *adjustment54;
+extern GtkAdjustment  *adjustment6;
+extern GtkAdjustment  *adjustment7;
+extern GtkAdjustment  *adjustment8;
+extern GtkAdjustment  *adjustment9;
+extern GtkAdjustment  *adjustment10;
+extern GtkAdjustment  *adjustment11;
+extern GtkAdjustment  *adjustment12;
+extern GtkAdjustment  *adjustment13; // back_trans
+extern GtkAdjustment  *adjustment14; // text_start
+extern GtkAdjustment  *adjustment15; // text_end
+extern GtkAdjustment  *adjustment16; // text_size
+extern GtkAdjustment  *adjustment1;
+extern GtkCssProvider  *cssProvider_entry1;
+extern GtkCssProvider  *cssProvider_entry2;
+extern GtkCssProvider  *cssProvider_entry2a;
+extern GtkCssProvider  *cssProvider_entry3;
+extern GtkCssProvider  *cssProvider_entry4;
+extern libvlc_equalizer_t *equalizer;
+extern libvlc_instance_t *inst;
+extern GdkColor		webplay;
+extern GdkWindow *gdk_window;
+extern GError *err;
+extern GdkPixbuf *pixbuf;
+extern GdkPixbuf *cambuf;
+extern struct shared_memory *SP;
+extern char **ProgramArray;
+
+extern int *programTime;
+extern char directories[5][1024];
+extern int lastDir;
+extern char Code_Home[];
+extern char top1[];
+extern char top2[];
+extern char top3[];
+extern int PROGRAM_MAX;
+extern struct ST **programData;
+extern int *programPlayed;
+extern GtkWidget *window;
+
+extern GtkWidget *g_btn_play2;
+extern int copyClipRow;
+extern int slide_timer;
+extern GtkWidget *current_stack;
+extern GtkWidget *time_of_day;
+extern char cutRow[];
+extern GtkWidget *egg_image;
+//extern GtkWidget *mpv_player;
+extern GtkWidget *sock1;
+//extern GtkWidget *vlcX;
+extern int slide_time;
+extern GtkWidget *ed_fixed;
+extern GtkWidget *pg_edit;
+
+extern GtkWidget *ct_fixed;
+extern libvlc_media_player_t *mediaPlayer;
+extern time_t clip_start;
+extern time_t clip_end;
+extern GtkWidget *frame_grab;
+extern GtkWidget *cam0_image;
+
+extern char time_string[128];
+//extern GtkWidget *camdraw;
+
+//extern GtkWidget *Cam0;
+extern int randomize_flg;
+extern char **AlbumArray;
+
+extern int talk_button;
+extern int talk_button1;
+extern double mic_volume;
+
+extern int scan_in_progress;
+extern int source_channels;
+extern GtkWidget *mini_mode;
+extern int MaxAudioSample;
+
+extern GtkWidget *clip_markers;
+extern int reCenter;
+
+extern char    Music_Home_Directory[16000];
+
+extern char    Program_List[1024];
+
+extern char    Album_List[2048];
+
+extern int timer_res;
+extern int Topgain;
+extern int     ALBUM_COVER_UPDATE_TIME;
+extern int sprinkleCount;
+
+
+extern libvlc_media_t *media;
+
+extern int bx1, bx2, bx3, bx4, bx5, bx6, bx7, bx8, bx9, bx10, bx11, bx12;
+extern int PlayPgm_flg;
+extern int LeftFlg;
+extern int bar_spots;
+extern int graph_type;
+extern int super_bars;
+extern int rand_colors;
+extern int ray_count;
+extern int connect_graph;
+extern int AGC;
+extern int SaveFlg;
+extern int save_flg;
+extern int bulls_eye, bulls_eye1;
+extern int display_bars;
+extern int draw_mode;
+extern int no_move;
+extern int e7Row,e8Row,e9Row,e10Row,e11Row,e12Row,e13Row,e14Row,e2Row,e3Row,e4Row,e15Row;
+extern int showFan;
+extern int drag_source;
+extern int drag_target;
+extern int c1state;
+extern int c2state;
+extern int c3state;
+extern int c4state;
+extern int c5state;
+extern int c6state;
+extern int c7state;
+extern int c8state;
+extern int c9state;
+extern int c10state;
+extern int c11state;
+extern int c12state;
+extern int L_Clipping, R_Clipping;
+extern int MLr, MRr;
+extern int MMr;
+extern int cutPlay;
+extern int cutPlayed;
+extern int AlbumButton[];
+extern int exchange;
+extern double  G_OFF, G_OFF1, G_OFF_FREQ;
+extern double master_volume;
+extern double mic_max;
+extern double SHADOW;
+extern double GRAPH_BAR_WIDTH;
+extern double bar_space;
+extern double Lx, Rx;
+extern double MaxLM;
+extern double ML, MR;
+extern double MaxRM, MaxLM;
+extern double MLx, MRx;
+extern double MaxMM;
+extern double RAMP_SPEED_UP;
+extern double RAMP_SPEED_DOWN;
+extern double Balance;
+extern double second, hour, minute;
+extern double radialStart;
+extern double radialDecay;
+extern double AudioCalibrate;
+extern double MaxL[], MaxR[], MaxM[];
+extern double srchan[100], rchan[100];
+extern double slchan[100], lchan[100];
+extern double lastR1[100];
+extern double lastR2[100];
+extern double lastR3[100];
+extern double lastR4[100];
+extern double lastR5[100];
+extern double lastR6[100];
+extern double lastR7[100];
+extern double lastR8[100];
+extern double lastR9[100];
+extern double lastRA[100];
+extern double SWEEPER_REDUCE;
+extern double curLevel;
+extern float ClipLevel;
+extern float exchangeBuf[];
+extern time_t timeRemaining ;
+extern struct APW     *widgets;
+
+extern int	display_bars;
+
+extern pa_glib_mainloop        *m_sink;        // internal audio - sink
+extern pa_glib_mainloop        *m_source;      // pulse audio microphone - source
+
+extern pa_context       *context_source;
+extern pa_context       *context_sink;
+extern pa_stream        *stream_sink;
+extern pa_stream        *stream_source;
+extern char             *device_name_source;
+extern char             *device_name_sink;
+extern char             *device_description_source;
+extern char             *device_description_sink;
+
+extern FILE *s1, *s2;
+
+ extern char                    default_source[1024];
+ extern char                    default_sink[1024];
+
+extern double cropLeft, cropRight;
+extern double cropTop, cropBottom;
+extern double infade, outfade;
+
+extern unsigned int frame_height;
+extern unsigned int frame_width;
+
+extern double hframe_ratio;
+extern double vframe_ratio;
+
+extern int x_offset;
+extern int y_offset;
+
+extern int mouse_ul_x, mouse_ul_y;
+extern int mouse_lr_x, mouse_lr_y;
+
+#endif

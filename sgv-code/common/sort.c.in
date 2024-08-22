@@ -1,0 +1,168 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+      by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Feb 24, 2024
+
+	#include "includes.h"
+	#include "common-externs.h"
+
+	#define SLASH '/'
+
+//---------------------
+//      Alpha sort
+//---------------------
+
+void	alpha_sort(int how) {
+
+        int f = 1, i, j, k, m;
+
+        for (i = 0; i < SP-> scount; i++) {
+
+                if (ProgramArray[i][0] != '/') {
+                        delRow ( i );
+		if (ProgramArray[i][strlen(ProgramArray[i]) - 1] == '/')
+                        delRow ( i );
+                        }
+                }
+
+        j =  SP->scount - 1;
+
+        while (f) {
+
+                f = 0;
+
+                for (i = 0; i < j; i++) { // file name sort only
+
+
+			for (k = strlen(ProgramArray[i]); k > 0; k--)
+				if (ProgramArray[i][k] == '/') break;
+
+			for (m = strlen(ProgramArray[i + 1]); m > 0; m--)
+				if (ProgramArray[i + 1][m] == '/') break;
+
+			if (how == 0) {
+                        	if (strcasecmp(&ProgramArray[i][k + 1], &ProgramArray[i + 1][m + 1]) > 0 ) {
+                                	SwapProgramElement(i);
+                                	f = 1;
+                                	}
+				}
+			else {
+                        	if (strcasecmp(&ProgramArray[i][k + 1], &ProgramArray[i + 1][m + 1]) < 0 ) {
+                                	SwapProgramElement(i);
+                                	f = 1;
+                                	}
+				}
+                        }
+
+                j = j - 1;
+                }
+
+
+        SP->begin = 0;
+        DisplayProgramButtons();        // first 24 buttons loaded
+        }
+
+void	on_sort2_clicked(GtkWidget *w) {
+
+	alpha_sort(1); // descending
+
+	}
+
+void    on_sort1_clicked(GtkWidget *b) {
+
+	alpha_sort(0); // ascending
+
+	}
+
+//---------------------
+//      Date sort
+//---------------------
+
+void	date_sort(int how) {
+
+        int f = 1, i, j, k, m;
+
+	struct stat attr;
+
+	time_t t1, t2;
+
+        for (i = 0; i < SP-> scount; i++) {
+
+                if (ProgramArray[i][0] != '/') {
+                        delRow ( i );
+		if (ProgramArray[i][strlen(ProgramArray[i]) - 1] == '/')
+                        delRow ( i );
+                        }
+                }
+
+        j =  SP->scount - 1;
+
+        while (f) {
+
+                f = 0;
+
+                for (i = 0; i < j; i++) { // file name sort only
+
+			stat(ProgramArray[i], &attr);
+			t1 = attr.st_mtime;
+
+			stat(ProgramArray[i+1], &attr);
+			t2 = attr.st_mtime;
+
+			if (how == 0) {
+                	        if (t1 < t2 ) {
+                                	SwapProgramElement(i);
+                                	f = 1;
+                                	}
+				}
+			else {
+                	        if (t1 > t2 ) {
+                                	SwapProgramElement(i);
+                                	f = 1;
+                                	}
+				}
+                        }
+
+                j = j - 1;
+                }
+
+        SP->begin = 0;
+        DisplayProgramButtons();        // first 24 buttons loaded
+        }
+
+void	on_date_sort1_clicked(GtkWidget *w) {
+
+	date_sort(1); // descending
+
+	}
+
+void    on_date_sort_clicked(GtkWidget *b) {
+
+	date_sort(0); // ascending
+
+	}

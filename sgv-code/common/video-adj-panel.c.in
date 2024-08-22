@@ -1,0 +1,65 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	August 8, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+
+void    on_video_adj_cancel_clicked(GtkButton *b) { // cancel button
+	gtk_widget_hide(video_adj_box);
+	}
+
+
+void    on_adjust_video_clicked(GtkWidget *w) {	// open overlay box
+
+	close_boxes();
+
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(frame_next), TRUE);
+
+        gtk_window_set_title(GTK_WINDOW(video_adj_box),"Video & Audio Adjustments");
+        gtk_widget_show(video_adj_box);  // show dialog
+	gtk_window_set_keep_above(GTK_WINDOW(video_adj_box), TRUE);
+
+        }
+
+
+void	on_scale_clip_clicked(GtkWidget *w) {
+	double scale_percent = (int)gtk_adjustment_get_value(adjustment37) / 100.0;
+	}

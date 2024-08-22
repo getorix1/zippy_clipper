@@ -1,0 +1,89 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2024
+#+      by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Feb 18, 2024
+
+#ifndef STRUCTURES_H
+#define STRUCTURES_H
+
+struct APW { // inter thread communication vector
+                        GtkWidget *currentFile;
+			GtkWidget *run_result;
+                        } ;
+
+struct THR1 { // camera thread data
+        GThread * camThread ;
+        int     camFlag ;
+        } ;
+
+//-------------------------------------------
+// shared memory - used in all threads
+//-------------------------------------------
+
+struct shared_memory {
+        char    next_random[2048];
+        int     NowPlaying; // program button id of currently playing
+        int     playProgram; // flag indicator to play program
+        int     playClip; // play a file
+        int     skipCurrent;
+        char    CurrentPlay[2048];
+        int     showVideo;
+        int     Clock;
+        volatile int  begin;
+        volatile int  Xbegin;
+        volatile int  scount;
+        volatile int  acount;
+        int     videoPlaying;
+        int     skip;
+        volatile int Pause;
+        int     OrgPlay;
+        char    TimeNext[128];
+        time_t  t1;
+        double  rchan[100], lchan[100];
+        char    playThis[2048];
+        int     VlcPauseFlg;
+        double  x60;
+        double  x170;
+        double  x310;
+        double  x600;
+        double  x1000;
+        double  x3000;
+        double  x6000;
+        double  x12000;
+        double  x14000;
+        double  x16000;
+        } ;
+
+struct          ST {
+                        int play;
+                        /* int del; */
+			time_t last_location
+                        } ;
+
+
+#endif

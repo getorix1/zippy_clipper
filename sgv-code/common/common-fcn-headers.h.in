@@ -1,0 +1,114 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+      by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+// August 10, 2024
+
+#ifndef COMMON_FCN_HEADERS
+#define COMMON_FCN_HEADERS
+
+int     ff_run(char *, char *, int);
+int	showImage(GtkWidget *image, char * file, int width, int height);
+int	albumImage(GtkWidget *image, char * file, int width, int height);
+int	empty_dir(char *);
+int	ffrun(char *);
+int	wipe(char *, char *, char *, int);
+int	filetype(char *);
+int	albumImage(GtkWidget *image, char *file, int width, int height);
+int	DisplayCover(char *file);
+int	filetype(char *);
+int	geotest(int, int);
+int	new_name(char *, char *, char *);
+int	new_name1(char *, char *);
+int	file_exists(char *);
+int	hexcleaner(char *t);
+int	nextSelection();
+int	playable(char *text);
+int	showImage(GtkWidget *image, char *file, int width, int height);
+int	vlc_start();
+int	vlc_stop();
+int	delDialog(char *);
+int	mainx (char * srch, int);
+int	vlc_playing();
+
+double	GetTime (char *file);
+
+char*	mhd_ref(char *file, char *returned_ref);
+char*	mhd_ref1(char *file, char *returned_ref);
+char*	mediaProbe(char *);
+char* 	shuffle(int, char *);
+
+gboolean	picture_handler(struct APW *widgets);
+gboolean	scroll_event(GdkEventScroll *e);
+gboolean        timer_handler(struct APW *widgets);
+gboolean	on_window_main_configure();
+
+void	tiled_button_clicked();
+void	join_button_clicked();
+void	audio_modify();
+void	forward_move(int);
+void	back_move(int);
+void	frame_update();
+void	run_command(char *, char *);
+void	on_scan_video_dir(GtkWidget *);
+void	join_fade_clicked(char *, int);
+void	timer_section1();
+void	zippy_says(char *);
+void	zippy_says1(char *);
+void	addToTop (char * file);
+void	get_meta(libvlc_media_t *media);
+void	PauseOff ();
+void	programButtonLoad(GtkWidget *, int);
+void	SwapProgramElement (int row);
+void	vlc_no_pause();
+void	vlc_pause();
+void	WindowsCallBacks();
+void	ClearPlayers();
+void	createPresets();
+void	entry_changed1 (GtkEntry *entry, gchar *preedit, gpointer  user_data, int Row);
+void	entry_insert(GtkEditable  *entry, gchar *edit);
+void	FileChooser (GtkFileChooserButton *b);
+void	LoadProgram(char *);
+void	meters_handler(GtkButton *b);
+void	moveOneToBottom (int row);
+void	moveOneToTop (int row);
+void	paste1(int *Row);
+void	delRow(int Row);
+void	DisplayProgramButtons(void);
+void	Message(char *);
+void	moveToBottom (int row);
+void	moveToTop (int row);
+void	on_haltProgram_clicked (GtkButton *button);
+void	on_window_main_destroy();
+void	paste(int *Row);
+void	PlayClip (GtkButton *, GtkEntry *, int);
+void	updateTimes();
+void	on_destroy();
+void	reset_clipper();
+
+#endif
+

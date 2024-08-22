@@ -1,0 +1,16 @@
+        private readonly string[] _commandLineOptions =
+        {
+            //"--verbose=2",
+            "--audio-filter=compressor",
+            "--compressor-rms-peak=0.00",
+            "--compressor-attack=24.00",
+            "--compressor-release=250.00",
+            "--compressor-threshold=-25.00",
+            "--compressor-ratio=2.00",
+            "--compressor-knee=4.50",
+            "--compressor-makeup-gain=17.00"
+        };
+        [...]
+        _libVLC = new LibVLC(_commandLineOptions);
+        [rest is the same...]
+
