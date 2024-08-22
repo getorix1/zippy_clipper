@@ -16,7 +16,7 @@ configure && make -j 8 -B
 
 where -j 8 means you have 8 cores on your cpu (adjust as needed)
 
-Then run Zipp-bin and click Re-load Clips button. A sample video will be present.
+Then run Zippy-bin and click Re-load Clips button. A sample video will be present.
 
 Kevin C. O'Kane <br>
 kc.okane@gmail.com <br>
