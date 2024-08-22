@@ -10,6 +10,14 @@ I am new to GitHub so expect confusion but all the code seems to be here.
 
 The *.in files become *.c, *.h etc by action of the <i>make</i> command.
 
+Make the file <i>configure</i> executable then:
+
+configure && make -j 8 -B
+
+where -j 8 means you have 8 cores on your cpu (adjust asnedded)
+
+Then run Zipp-bin and click Re-load Clips button. A sample video will be present.
+
 Kevin C. O'Kane <br>
 kc.okane@gmail.com <br>
 https://www.cs.uni.edu/~okane <br>
