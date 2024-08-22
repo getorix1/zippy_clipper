@@ -1,0 +1,683 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	August 11, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+int     playable(char *text) {
+	if (text[0] == 0 ) return 0;
+	if (text[strlen(text)-1] == SLASH) return 0;
+	else return 1;
+	}
+
+
+gboolean        on_vlcPosition_scroll_event(GtkScrollbar *b, GdkEventScroll *e) {
+
+//--------------------------------------------------------------
+//	see GdkEventScroll data structure for valid elements
+//	see: gtk_widget_set_events(xxx,GDK_SCROLL_MASK);
+//--------------------------------------------------------------
+
+	if (!mediaPlayer) return FALSE;
+
+	t_position = libvlc_media_player_get_time(mediaPlayer);
+
+	if (e->delta_y == 1) { // down
+		t_position = t_position - 1000;
+		if (t_position < 0) t_position = 0;
+		}
+
+	else { // up
+		t_position = t_position + 1000;
+		}
+
+	frame_update();
+
+	return TRUE;
+	}
+
+void    on_scroll_value_changed(GtkRange *r) {
+
+	int k;
+
+	gdouble x = gtk_range_get_value (r);
+	k = x; // make integer
+	if (k > SP->scount - PROGRAM_BUTTON_COUNT)
+		k = SP->scount - PROGRAM_BUTTON_COUNT;
+	if (k < 0) k = 0;
+	SP->begin = k;
+	DisplayProgramButtons();
+	}
+
+
+void    ClearPlayers() {
+	on_crop_reset_clicked(NULL);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_speed), TRUE) ;
+	if (vlc_playing()) vlc_stop();
+	SP->playClip = 0;
+	SP->VlcPauseFlg = 0;
+	SP->playProgram = 0;
+	SP->skipCurrent = 0;
+	SP->skip= 0;
+	on_clear_clip_clicked(NULL);
+	}
+
+
+int     hexcleaner(char *t) {
+
+	char *_ftmp;
+	int m, n = 0, p,f = 0;
+
+	int i = strlen(t);
+
+	_ftmp = (char *) malloc(i + 1);
+
+	if (_ftmp == NULL ) {
+		printf("Out of memory in hexcleaner\n");
+		abort();
+		}
+
+	for(m=0; t[m]; m++) {
+
+		if (t[m] == '\n' ) {
+			f = 1;
+			continue;
+			}
+		if (t[m] == '\r' ) {
+			f = 1;
+			continue;
+			}
+
+		if (t[m] == '%') {
+
+			f = 1;
+			if (t[m+1] >= 'a' && t[m+1] <= 'z') t[m+1] = t[m+1]-32;
+			if (t[m+1] >= '0' && t[m+1] <= '9') p=( t[m+1]-'0' ) * 16;
+			else p=(t[m+1]-'A'+10)*16;
+
+			if (t[m+2] >= 'a' && t[m+2] <= 'z') t[m+2] = t[m+2]-32;
+			if (t[m+2] >= '0' && t[m+2] <= '9') p = p+(t[m+2]-'0');
+			else p = p + (t[m+2] - 'A' + 10);
+
+			_ftmp[n] = p;  /* insert value into output string */
+			n++;
+			m = m + 2;
+			}
+
+		else {
+			_ftmp[n++] = t[m];
+			}
+		}
+
+	_ftmp[n]=0;
+	strcpy(t,_ftmp);
+	free(_ftmp);
+	return f;
+	}
+
+//------------------------------------------------
+//      Music_Home_Directory Macro
+//      Adjust for your situation.
+//      This can also be set as a CLI parameter.
+//------------------------------------------------
+
+void	css_set1(GtkCssProvider * cssProvider, GtkWidget *g_widget) {
+
+	GtkStyleContext *context;
+
+	context = gtk_widget_get_style_context(g_widget);
+
+	gtk_style_context_add_provider (context,
+	                                GTK_STYLE_PROVIDER(cssProvider), 1000);
+
+	}
+
+
+gboolean        scroll_event(GdkEventScroll *e) {
+
+//--------------------------------------------------------------
+//      see GdkEventScroll data structure for valid elements
+//      see: gtk_widget_set_events(g_buttonxx,GDK_SCROLL_MASK);
+//--------------------------------------------------------------
+
+	if (e->direction == 1) { // down
+		SP->begin=SP->begin + 1;
+		if (SP->begin + PROGRAM_BUTTON_COUNT >= SP->scount) {
+			SP->begin = SP->scount - PROGRAM_BUTTON_COUNT;
+			}
+		if (SP->begin < 0 ) SP->begin = 0;
+		DisplayProgramButtons();
+		}
+
+	else { // up
+		SP->begin=SP->begin - 1;
+		if (SP->begin + PROGRAM_BUTTON_COUNT >= SP->scount) {
+			SP->begin = SP->scount - PROGRAM_BUTTON_COUNT;
+			}
+		if (SP->begin < 0 ) SP->begin = 0;
+		DisplayProgramButtons();
+		}
+	return TRUE;
+	}
+
+void	on_scroll_up_clicked(GtkWidget *w) {
+
+	SP->begin=SP->begin - 12;
+	if (SP->begin + PROGRAM_BUTTON_COUNT >= SP->scount) {
+		SP->begin = SP->scount - PROGRAM_BUTTON_COUNT;
+		}
+	if (SP->begin < 0 ) SP->begin = 0;
+	DisplayProgramButtons();
+	}
+
+
+void	on_scroll_down_clicked(GtkWidget *w) {
+	SP->begin=SP->begin + 12;
+	if (SP->begin + PROGRAM_BUTTON_COUNT >= SP->scount) {
+		SP->begin = SP->scount - PROGRAM_BUTTON_COUNT;
+		}
+	if (SP->begin < 0 ) SP->begin = 0;
+	DisplayProgramButtons();
+	}
+
+
+void    Message(char * msg) {
+
+	if (strlen(msg) == 0) return;
+
+	GdkColor color1;
+	color1.red = 0x1111;
+	color1.green = 0x1111;
+	color1.blue = 0x9999;
+
+	GdkColor color2;
+	color2.red = 0xFFFF;
+	color2.green = 0xFFFF;
+	color2.blue = 0x0000;
+
+	GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT ;
+
+	GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(window),
+	                    flags,
+	                    GTK_MESSAGE_WARNING,
+	                    GTK_BUTTONS_CLOSE,
+	                    msg);
+
+	gtk_widget_modify_bg(dialog, GTK_STATE_NORMAL, &color1);
+	gtk_widget_modify_fg(dialog, GTK_STATE_NORMAL, &color2);
+
+	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
+
+	gtk_dialog_run (GTK_DIALOG (dialog));
+	gtk_widget_destroy (dialog);
+	}
+
+
+void    on_row(GtkButton *b) {
+	printf("You selected: %s\n", gtk_button_get_label (b));
+	}
+
+
+//---------------------------------------------------------------------------
+//	zippy section
+//---------------------------------------------------------------------------
+
+
+void	gtk_widget_destroy(GtkWidget *w) { }
+
+gboolean on_clip_markers_draw (GtkDrawingArea *widget, cairo_t *cr) {
+
+	time_t 	len;
+	double begin, end;
+
+	if (mediaPlayer == NULL) return FALSE;
+
+//---------------------
+//	total length
+//---------------------
+
+	len = libvlc_media_player_get_length (mediaPlayer); // milliseconds
+
+	end = clip_end;
+
+	gint da_width, da_height;
+	gtk_widget_get_size_request (widget, &da_width, &da_height);
+
+	begin = 
+		((double) clip_start / (double) len) * (double) da_width; // da_width width of draw window
+
+	end = ((double)(end) / (double) len) * (double) da_width;
+
+	if (begin < end) {
+
+		cairo_set_source_rgba(cr, 1.0, 0.2, 0.8, 1.0);
+		cairo_rectangle (cr, begin, 0.0, end - begin, 10.);
+
+		cairo_fill(cr); // fill in arc
+		cairo_stroke (cr);
+
+		}
+
+	return FALSE;
+	}
+
+void	on_clear_clip_clicked(GtkWidget *w) {
+	if (!mediaPlayer) return;
+	vlc_no_pause();
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_speed), TRUE) ;
+	clip_start = clip_end = 0;
+
+#ifdef VLC4
+		libvlc_media_player_set_time(mediaPlayer, 0, FALSE);
+#else
+		libvlc_media_player_set_time(mediaPlayer, 0);
+#endif
+
+	programData[SP->NowPlaying]->last_location = 0;	
+	frame_width = 0;
+	frame_height = 0;
+        mouse_ul_x = -1;
+	vlc_start();
+	gtk_widget_queue_draw(clip_markers);
+	}
+
+
+void    on_in_fade_value_changed(GtkSpinButton *s) {
+        infade = gtk_spin_button_get_value(s);
+	}
+
+void    on_clip_duration_value_changed(GtkSpinButton *s) {
+        clip_duration = gtk_spin_button_get_value(s);
+	}
+
+void    on_trans_duration_value_changed( GtkSpinButton *s) {
+        trans_duration = gtk_spin_button_get_value(s);
+	}
+
+void    on_out_fade_value_changed( GtkSpinButton *s) {
+        outfade = gtk_spin_button_get_value(s);
+	}
+
+void	reset_clipper() {
+        cropLeft = 0.0, cropRight = 0.0;
+        cropTop = 0.0, cropBottom = 0.0;
+        outfade = gtk_spin_button_get_value(out_fade);
+        infade = gtk_spin_button_get_value(in_fade);
+        frame_height = 0;
+        frame_width = 0;
+	gtk_adjustment_set_value (adjustment40, 0.0);
+	gtk_adjustment_set_value (adjustment54, 0.0);
+	gtk_adjustment_set_value (adjustment6, 0.0);
+	gtk_adjustment_set_value (adjustment7, 0.0);
+	gtk_adjustment_set_value (adjustment1, 0.0);
+        x_offset = 0;
+        y_offset = 0;
+	}
+
+void	on_snapshot_clicked(GtkWidget *w) {
+
+	close_boxes();
+
+	if (!mediaPlayer) {
+		zippy_says("No media playing.\n");
+		return;
+		}
+
+	char tmp[16000];
+	time_t t = time(0);
+	new_name1(tmp, "snapshot.png");
+	sprintf(tmp, "%s", tmp);
+	printf("Snapshot:  %s\n",tmp);
+	libvlc_video_take_snapshot(mediaPlayer,0, tmp, 0, 0);
+
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+
+        clear_play();
+
+        on_scan_video_dir_clicked(NULL);
+
+	}
+
+
+void	on_full_speed_clip_pressed(GtkWidget *w) { // radio button
+	}
+
+void	on_half_speed_clip_pressed(GtkWidget *w) {
+	}
+
+
+void	clear_play() {
+	for (int i = 0; i < SP->scount; i++)
+		programData[i]->play = 0;
+	DisplayProgramButtons();
+	}
+
+void    on_dxb8_clicked(GtkButton *b) { // clear button
+	TextBuffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(dbox4_tv));
+	gtk_text_buffer_set_text (TextBuffer, (const gchar *) "", (gint) -1);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(view_log), TRUE);
+	gtk_widget_hide(g_dbox4);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(view_log), FALSE);
+	}
+
+
+void    on_dxb7_clicked(GtkButton *b) { // ok button
+	gtk_widget_hide(g_dbox4);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(view_log), FALSE);
+	}
+
+
+
+void	on_scan_video_dir_clicked(GtkWidget *w) {
+
+	char tmp[8192];
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+	printf("Scan video directory\n");
+
+	sprintf(tmp, "\"%s/video\"s", Code_Home);
+
+	int i = empty_dir(tmp);
+
+//-------------------------------------------------------
+//	populate program.lst
+//	full addresses of files
+//	system("readlink -f videos/* > program.lst");
+//-------------------------------------------------------
+
+	if (i == 0) 
+		sprintf(tmp, "cat /dev/null > \"%s\"", Program_List);
+	else
+		sprintf(tmp, "readlink -f \"%s/\"* > \"%s\"", 
+			Music_Home_Directory, Program_List);
+
+	printf("Directory Scan: %s\n", tmp);
+
+	int err_stat = system(tmp);
+
+	if (err_stat != 0) {
+		zippy_says("An error occurred\n");
+		return;
+		}
+
+	LoadProgram(Program_List);
+	DisplayProgramButtons( );
+
+	on_date_sort_clicked(NULL);
+
+	}
+
+
+void	on_view_log_toggled(GtkWidget *w) {
+
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)) )
+		gtk_widget_show(g_dbox4);  // show dialog
+	else
+		gtk_widget_hide(g_dbox4);  // hide dialog
+
+	}
+
+
+void	on_halt_ffmpeg_clicked(GtkWidget *w) {
+
+	system("killall -s INT ffmpeg");
+	system("killall -s INT ffplay");
+
+	DisplayProgramButtons();
+
+	}
+
+
+void	on_clear_all_clicked(GtkWidget *w) {
+
+	int i;
+
+	for (i = 0; i < (SP->scount); i++) {
+		programData[i]->play = 0;
+		}
+	DisplayProgramButtons( );
+	}
+
+void	on_select_all_clicked(GtkWidget *w) {
+
+	int i;
+
+	for (i = 0; i < (SP->scount); i++) {
+		programData[i]->play = 1;
+		}
+
+	DisplayProgramButtons( );
+	}
+
+
+void	on_play_clip_clicked(GtkWidget *w) {
+
+	if (!mediaPlayer) return;
+
+#ifdef VLC4
+                libvlc_media_player_set_time(mediaPlayer, clip_start, FALSE);
+#else
+                libvlc_media_player_set_time(mediaPlayer, clip_start);
+#endif
+
+	vlc_no_pause();
+
+	}
+
+
+void    on_granularity_value_changed( GtkSpinButton *s, GtkScrollType scr) {
+
+        gdouble x = (int) gtk_adjustment_get_value(adjustment20);
+
+	gtk_adjustment_set_step_increment (adjustment6, x);
+	gtk_adjustment_set_step_increment (adjustment7, x);
+	gtk_adjustment_set_step_increment (adjustment54, x);
+	gtk_adjustment_set_step_increment (adjustment40, x);
+
+	}
+
+void    on_frame_forward2_value_changed(GtkSpinButton *r) { // start clip
+
+        if (!mediaPlayer) return;
+
+	if (ignore_me) { ignore_me = 0; return; }
+
+	if (gtk_toggle_button_get_active(frame_next))
+		gtk_toggle_button_set_active(frame_next, FALSE);
+
+	gdouble x = gtk_spin_button_get_value(r);
+
+	t_position = x * 1000;
+
+	clip_start = t_position;
+
+	ignore_me = 1;
+
+        frame_update();
+
+	gtk_widget_queue_draw(clip_markers);
+
+	}
+
+void    on_frame_forward1_value_changed(GtkSpinButton *r) { // end clip
+
+        if (!mediaPlayer) return;
+
+	if (ignore_me) { ignore_me = 0; return; }
+
+	if (gtk_toggle_button_get_active(frame_next))
+		gtk_toggle_button_set_active(frame_next, FALSE);
+
+	gdouble x = gtk_spin_button_get_value(r);
+
+	t_position = x * 1000;
+
+	clip_end = t_position;
+
+	ignore_me = 1;
+
+        frame_update();
+
+	gtk_widget_queue_draw(clip_markers);
+
+	}
+
+
+void	on_frame_reset_clicked(GtkWidget *w) {
+
+	if (!mediaPlayer) return;
+	clip_start = 0;
+	clip_end = 0;
+	ignore_me = 1;
+	gtk_adjustment_set_value(adjustment22, 0.0);
+	while (gtk_events_pending()) gtk_main_iteration();
+	ignore_me = 1;
+	gtk_adjustment_set_value(adjustment23, 0.0);
+	while (gtk_events_pending()) gtk_main_iteration();
+	}
+
+
+
+void	on_check_format_clicked(GtkWidget *w) {
+
+	int i, first = -1, second = -1;
+
+        for (i = 0; i < SP->scount; i++) {
+                if (programData[i]->play) {
+			first = i;
+			break;
+			}
+		}
+
+	if (first < 0) {
+		zippy_says("No checked rows found\n");
+		return;
+		}
+
+        for (i = first + 1; i < SP->scount; i++) {
+                if (programData[i]->play) {
+			second = i;
+			int t = geo_test(ProgramArray[first], ProgramArray[second]);
+			if (t == 0 ) {
+				return;
+				}
+			first = second;
+			}
+		}
+
+	zippy_says("No problems\n");
+
+	}
+
+void	close_boxes() {
+
+	on_dxb10_clicked(NULL);
+	on_overlay_cancel_clicked(NULL);
+	on_video_adj_cancel_clicked(NULL);
+	on_file_name_cancel_clicked(NULL);
+	on_settings_dlg_cancel_clicked(NULL);
+//	on_haltProgram_clicked(NULL);
+
+	if (!mediaPlayer) 
+		if (!gtk_toggle_button_get_active(frame_next))
+			gtk_toggle_button_set_active(frame_next, TRUE);
+
+	}
+
+//------------------------------------------------------
+//	The following should not occur under Linux but
+//	do, at present, under WSL2 Linux.
+//------------------------------------------------------
+
+gboolean on_video_adj_box_delete_event ( GtkWidget* w) {
+	gtk_widget_hide(w);
+	return TRUE;
+	}
+
+gboolean on_merge_fixed_delete_event ( GtkWidget* w) {
+	gtk_widget_hide(w);
+	return TRUE;
+	}
+
+gboolean on_overlay_box_delete_event ( GtkWidget* w) {
+	gtk_widget_hide(w);
+	return TRUE;
+	}
+
+gboolean on_dbox5_delete_event ( GtkWidget* w) {
+	gtk_widget_hide(w);
+	return TRUE;
+	}
+
+gboolean on_join_box_delete_event ( GtkWidget* w) {
+	gtk_widget_hide(w);
+	return TRUE;
+	}
+
+gboolean on_file_name_delete_event ( GtkWidget* w) {
+	gtk_widget_hide(w);
+	return TRUE;
+	}
+
+gboolean on_dbox4_delete_event ( GtkWidget* w) {
+	gtk_widget_hide(w);
+	return TRUE;
+	}
+
+gboolean on_text_frame_delete_event ( GtkWidget* w) {
+	gtk_widget_hide(w);
+	return TRUE;
+	}
+
+void	on_scrn_capture_clicked(GtkWidget *w) {
+	char tmp[8192];
+	sprintf(tmp, "\"%s/encoder-bin\" &", Code_Home);
+	printf ("%s,\n", tmp);
+	system(tmp);
+	}
+
+void	on_settings_panel_clicked(GtkWidget *w) {
+
+	}

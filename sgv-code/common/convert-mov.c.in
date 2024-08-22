@@ -1,0 +1,95 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	July 31, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+
+void	on_cvt_mov_clicked(GtkWidget *w) {
+
+	char tmp[16000], filename[4096];
+	time_t tmark = time(0);
+	int i, j, k, pcount = 0;
+
+	close_boxes();
+
+	char note[16000];
+	int err_stat;
+
+	for (i = 0; i < (SP->scount); i++) {
+
+		if (programData[i]->play) {
+
+			programData[i]->play = 0;
+
+			pcount++;
+
+				sprintf(tmp, "ffmpeg -y -i \"%s\" \"%s.mov\" ",
+					ProgramArray[i], ProgramArray[i]);
+
+				sprintf(note, "Convert\n");
+
+				err_stat = ff_run(note, tmp, -1);
+
+			if (err_stat != 0) {
+				zippy_says("An error occurred\n");
+				sprintf(tmp, "rm \"%s.mov\"", ProgramArray[i]);
+				system(tmp);
+				return;
+				}
+
+			printf("Created: %s.mov\n\n", ProgramArray[i]);
+
+			}
+		}
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+
+	if (!pcount) {
+		zippy_says("No files selected.\n");
+		}
+
+	clear_play();
+
+	on_scan_video_dir_clicked(NULL);
+
+	}
+

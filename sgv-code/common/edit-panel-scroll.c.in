@@ -1,0 +1,68 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021 by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	April 20, 2021
+
+	#include "includes.h"
+	#include "common-externs.h"
+
+	#define SLASH '/'
+
+//--------------- ENTRY BOX SCROLL EVENT program rows
+
+//--------------------------------------------------------------------------------
+//      on_entry7_scroll_event  on_entry8_scroll_event  on_entry9_scroll_event
+//      on_entry10_scroll_event on_entry12_scroll_event on_entry13_scroll_event
+//      on_entry14_scroll_event on_entry2_scroll_event on_entry3_scroll_event
+//      on_entry4_scroll_event  on_entry15_scroll_event on_entry11_scroll_event
+//--------------------------------------------------------------------------------
+
+#define ENTRY_SCROLL(NBR) \
+        gboolean on_entry## NBR ##_scroll_event(GtkEntry *b, GdkEventScroll *e) { \
+                return scroll_event(e); }
+
+        ENTRY_SCROLL(7)  ENTRY_SCROLL(8)  ENTRY_SCROLL(9)  ENTRY_SCROLL(10)
+        ENTRY_SCROLL(11) ENTRY_SCROLL(12) ENTRY_SCROLL(13) ENTRY_SCROLL(14)
+        ENTRY_SCROLL(2)  ENTRY_SCROLL(3)  ENTRY_SCROLL(4)  ENTRY_SCROLL(15)
+
+//--------------- ENTRY BOX SCROLL EVENT program rows (different numbering)
+
+//--------------------------------------------------------------------------------
+//      on_button8_scroll_event  on_button9_scroll_event
+//      on_button10_scroll_event on_button12_scroll_event on_button13_scroll_event
+//      on_button14_scroll_event on_button2_scroll_event  on_button3_scroll_event
+//      on_button4_scroll_event  on_button15_scroll_event on_button11_scroll_event
+//--------------------------------------------------------------------------------
+
+#define BUTTON_SCROLL(NBR) \
+        gboolean on_button## NBR ##_scroll_event(GtkEntry *b, GdkEventScroll *e) { \
+                return scroll_event(e); }
+
+        BUTTON_SCROLL(2)  BUTTON_SCROLL(3)  BUTTON_SCROLL(5)  BUTTON_SCROLL(6)
+        BUTTON_SCROLL(8)  BUTTON_SCROLL(9)  BUTTON_SCROLL(10) BUTTON_SCROLL(11)
+        BUTTON_SCROLL(12) BUTTON_SCROLL(13) BUTTON_SCROLL(14) BUTTON_SCROLL(15)
+

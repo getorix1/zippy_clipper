@@ -1,0 +1,157 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Feb 18, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+
+void	on_still_clicked(GtkWidget *w) {
+
+	char tmp[16000], tmp1[1024], filename[4096], scale[256];
+	time_t tmark = time(0);
+	int pcount = 0, i, j, k;
+
+	close_boxes();
+
+	while (gtk_events_pending()) gtk_main_iteration();
+
+	for (i = 0; i < (SP->scount); i++) {
+
+		if (programData[i]->play) {
+
+			k = filetype(ProgramArray[i]);
+
+			if (k != PNG && k != JPG && k != TIFF) {
+				char tmp[4096];
+				sprintf(tmp, "Image file must be PNG or JPG\n\t%s\n",
+					ProgramArray[i]);
+				zippy_says(tmp);	
+				continue;
+				}
+
+			programData[i]->play = 0;
+
+			pcount++;
+
+//----------------------------------------------------------------------------------------------
+//	ffmpeg -loop 1 -i aaa.png -c:v libx264 -t 15 -pix_fmt yuv420p -vf scale=320:240 out.@FMT@
+//----------------------------------------------------------------------------------------------
+
+			if (gtk_toggle_button_get_active(vid_640x480)) {
+				strcpy(scale, "scale=640x480");
+				strcpy(tmp1, "640x480");
+				}
+
+			if (gtk_toggle_button_get_active(vid_720x480)) {
+				strcpy(scale, "scale=x720x480");
+				strcpy(tmp1, "720x480");
+				}
+
+			if (gtk_toggle_button_get_active(vid_1280x720)) {
+				strcpy(scale, "scale=1280x720");
+				strcpy(tmp1, "1280x720");
+				}
+
+			if (gtk_toggle_button_get_active(vid_1920x1080)) {
+				strcpy(scale, "scale=1920x1080");
+				strcpy(tmp1, "1920x1080");
+				}
+
+			if (gtk_toggle_button_get_active(vid_3840x2160)) {
+				strcpy(scale, "scale=3840x2160");
+				strcpy(tmp1, "3840x2160");
+				}
+
+			char result[2048];
+			vid_fmt_std(result, ProgramArray[i], filename, "stl");
+
+			int err_stat;
+
+			sprintf(tmp, "ffmpeg -y -loglevel info -f lavfi "
+				"-i anullsrc=channel_layout=stereo:sample_rate=@AUD@ "
+				"-loop 1 -i \"%s\" "
+				"-c:v libx264 -t %d -vf fps=@FPS@ -pix_fmt yuva420p  "
+				"-c:a aac -map 0:a -map 1:v "
+				" %s @LOSS@ \"%s\"",
+
+                		ProgramArray[i], clip_duration, result, filename);
+
+			err_stat = ff_run("Still", tmp, -1);
+
+			system("rm -f cliptmp.@FMT@");
+
+			if (err_stat == 0) {
+				}
+			else {
+				zippy_says("An error occurred\n");
+				sprintf(tmp, "rm \"%s\"", filename);
+				system(tmp);
+				}
+
+			}
+		}
+
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+        clear_play();
+
+        on_scan_video_dir_clicked(NULL);
+
+	if (!pcount) {
+		zippy_says("Zippy Says: No files selected.\n");
+		}
+
+	}
+
+void	on_still_pressed(GtkWidget *w) {
+	}
+
+
+void   still_button_clicked() { // ok button substitute
+
+        vlc_pause();
+
+	close_boxes();
+
+        }
+
+

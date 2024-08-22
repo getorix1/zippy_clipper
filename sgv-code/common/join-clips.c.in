@@ -1,0 +1,453 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023, 2024
+#+      by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Feb 24, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+//-------------------------------------
+//	simple join - no transition
+//-------------------------------------
+
+void	on_join_videos_clicked(GtkWidget *w) {
+
+	char tmp[16000], new[16000];
+	int i, pcount = 0;
+
+	close_boxes(); // hide box and stuff
+
+	join_button_clicked();
+
+	new_name(new, "join.@FMT@", "join");
+
+	if (SP->scount < 1) return;
+
+	FILE *f1 = fopen("lst.txt", "w");
+
+	for (i = 0; i< SP->scount; i++) {
+		pcount++;
+		if (programData[i]->play)
+
+			if (filetype(ProgramArray[i]) == URL) {
+				zippy_says("Files must be local to be joined.\n");
+				return;
+				}
+
+			fprintf(f1, "file \'%s\'\n", ProgramArray[i]);
+		}
+
+	fclose(f1);
+
+	if (!pcount) {
+		zippy_says("No files selected.\n");
+		return;
+		}
+
+	time_t tmark = time(0);
+
+	sprintf(tmp, 
+		"ffmpeg -y -loglevel info -f concat -safe 0 -i lst.txt -c copy \"%s\"",
+		new);
+
+	int ierr = ff_run("joiner",tmp, -1);
+
+	if (ierr != 0) {
+		zippy_says("There were errors.\n");
+		sprintf(tmp, "rm %s\n", new);
+		system(tmp);
+		return;
+		}
+
+	sprintf(tmp, "%s created\n", new);
+	zippy_says(tmp);
+
+
+        gtk_widget_hide(run_result);
+        gtk_widget_hide(dismiss_zippy_says);
+
+
+        clear_play();
+
+        on_scan_video_dir_clicked(NULL);
+
+
+	system("rm lst.txt");
+	printf("rm lst.txt\n");
+	
+	}
+
+
+//-----------------------------
+//	join with transition
+//-----------------------------
+
+void	on_join_wipeleft_clicked(GtkWidget *w) {
+	join_fade_clicked("lft", WIPE_LEFT);
+	}
+
+void	on_join_circleclose_clicked(GtkWidget *w) {
+	join_fade_clicked("cir", CIRCLE_CLOSE);
+	}
+
+
+void	on_join_dissolve_clicked(GtkWidget *w) {
+	join_fade_clicked("dis", DISSOLVE);
+	}
+
+void	on_slideleft_clicked(GtkWidget *w) {
+	join_fade_clicked("sll", SLIDELEFT);
+	}
+
+void	on_pixelize_clicked(GtkWidget *w) {
+	join_fade_clicked("pxl", PIXELIZE);
+	}
+
+void	on_circlecrop_clicked(GtkWidget *w) {
+	join_fade_clicked("ccr", CIRCLECROP);
+	}
+
+void	on_wipeup_clicked(GtkWidget *w) {
+	join_fade_clicked("wup", WIPEUP);
+	}
+
+void	on_slideup_clicked(GtkWidget *w) {
+	join_fade_clicked("sup", SLIDEUP);
+	}
+
+void	on_wiperight_clicked(GtkWidget *w) {
+	join_fade_clicked("wrt", WIPERIGHT);
+	}
+
+void	on_slideright_clicked(GtkWidget *w) {
+	join_fade_clicked("srt", SLIDERIGHT);
+	}
+
+void	on_wipedown_clicked(GtkWidget *w) {
+	join_fade_clicked("wdn", WIPEDOWN);
+	}
+
+void	on_rantran_clicked(GtkWidget *w) {
+	int i = rand() % 19 + 1; // random 1 thru 19
+	join_fade_clicked("rdm", RANDOMTRAN);
+	}
+
+void	on_slide_down_clicked(GtkWidget *w) {
+	join_fade_clicked("sld", SLIDE_DOWN);
+	}
+
+void	on_horzopen_clicked(GtkWidget *w) {
+	join_fade_clicked("hop", HORZOPEN);
+	}
+
+void	on_fade_clicked(GtkWidget *w) {
+	join_fade_clicked("fad", FADE);
+	}
+
+void	on_vertopen_clicked(GtkWidget *w) {
+	join_fade_clicked("vop", VERTOPEN);
+	}
+
+void	on_radial_wipe_clicked(GtkWidget *w) {
+	join_fade_clicked("rad", RADIAL_WIPE);
+	}
+
+void	on_squeezeh_clicked(GtkWidget *w) {
+	join_fade_clicked("sqh", SQUEEZEH);
+	}
+
+void	on_squeezev_clicked(GtkWidget *w) {
+	join_fade_clicked("sqv", SQUEEZEV);
+	}
+
+void	on_wipebr_clicked(GtkWidget *w) {
+	join_fade_clicked("wbr", WIPEBR);
+	}
+
+//-------------------------------------
+//	join with transition clicked
+//-------------------------------------
+
+void	join_fade_clicked(char *style, int type) {
+
+//------------------------------------------
+//	style is string code for join type
+//	type is define code for join type
+//------------------------------------------
+
+	char tmp[16000], filename[4096];
+	char mhd_name[16000];
+	int i, j, k, pcount = 0;
+
+	close_boxes(); // hide box and stuff
+
+	printf("\n-----------------FADDER--------------------------\n");
+
+	join_button_clicked();
+
+	for (i = 0; i < (SP->scount); i++) { // count and remember first
+		if (programData[i]->play) {
+
+			if (filetype(ProgramArray[i]) == URL) {
+				zippy_says("Files must be local to be joined.\n");
+				return;
+				}
+
+			pcount++;
+			if (pcount == 1) { // note first
+				programData[i]->play = 0;
+				j = i;
+				} // continue counting
+			}
+		}
+
+	if (pcount < 2) {
+		zippy_says("Too few files selected.\n");
+		return;
+		}
+
+	strcpy(filename, "join-");
+	strcat(filename, style);
+	strcat(filename, ".@FMT@");
+	file_probe(ProgramArray[j], filename, tmp);
+	strcpy(filename, tmp);
+
+//-------------------------------------
+//	is first file a still image?
+//-------------------------------------
+
+	int ft = filetype(ProgramArray[j]);
+
+	if (ft == JPG || ft == PNG) {
+		char result[2048], xfilename[8192], tmp[16000];
+
+		vid_fmt_std(result, tmp, xfilename, "stl");
+
+		int err_stat;
+
+		sprintf(tmp, "ffmpeg -y -loglevel info -f lavfi "
+			"-i anullsrc=channel_layout=stereo:sample_rate=@AUD@ "
+			"-loop 1 -i \"%s\" "
+			"-c:v libx264 -t %d -vf fps=@FPS@ -pix_fmt yuva420p  "
+			"-c:a aac -map 0:a -map 1:v "
+			" %s @LOSS@ %s ",
+
+			ProgramArray[j], clip_duration, result, mhd_ref("jointmp.mp4", mhd_name));
+
+			err_stat = ff_run("Still", tmp, -1);
+
+			sprintf(tmp, "cp %s %s ", 
+				mhd_ref("jointmp.mp4", mhd_name), mhd_ref(filename, mhd_name));
+			err_stat = ff_run("StillCp", tmp, -1);
+		}
+
+	else {
+
+//---------------------------------------
+//	copy initial file to temp file
+//---------------------------------------
+
+		sprintf(tmp, "cp \"%s\" \"%s\" ", ProgramArray[j], filename); // first video is index j
+		printf("\n%s\n\n", tmp);
+		system(tmp);
+		}
+
+	pcount = 0;
+
+	for (i = 0; i < (SP->scount); i++) { 
+		if (programData[i]->play) {
+			programData[i]->play = 0;
+			int err = wipe(filename, ProgramArray[i], style, type);
+			if (err < 0) return;
+			}
+		}
+
+	sprintf(tmp, "rm -f %s ", mhd_ref("jointmp.mp4", mhd_name));
+	system(tmp);
+	zippy_says("Join with transition(s) complete");
+	clear_play();
+	addToTop(filename); // starter join file
+	programData[0]->play = 1;
+	return;
+	}
+
+//-----------------------------------------
+//	ffmpeg esetup for join with fade
+//-----------------------------------------
+
+int	wipe(char *first, char *xsecond, char *style, int type) {
+
+	char second[8192];
+	strcpy(second, xsecond);
+	char mhd_name[16000];
+
+	int ft = filetype(first);
+	if (ft == JPG || ft == PNG) {
+
+		char result[2048], filename[8192], tmp[16000];
+		vid_fmt_std(result, tmp, filename, "stl");
+
+		int err_stat;
+
+		sprintf(tmp, "ffmpeg -y -loglevel info -f lavfi "
+			"-i anullsrc=channel_layout=stereo:sample_rate=@AUD@ "
+			"-loop 1 -i \"%s\" "
+			"-c:v libx264 -t %d -vf fps=@FPS@ -pix_fmt yuva420p  "
+			"-c:a aac -map 0:a -map 1:v "
+			" %s @LOSS@ %s ",
+
+			first, clip_duration, result, mhd_ref("jointmp.mp4", mhd_name));
+
+			err_stat = ff_run("Still", tmp, -1);
+
+			sprintf(tmp, "cp %s \"%s\"", mhd_ref("jointmp.mp4", mhd_name), first);
+			err_stat = ff_run("StillCp", tmp, -1);
+		}
+
+//------------------------------------
+//	is second file a still image?
+//------------------------------------
+
+	ft = filetype(second);
+	if (ft == JPG || ft == PNG) {
+
+		char result[2048], filename[8192], tmp[16000];
+		vid_fmt_std(result, second, filename, "stl");
+
+		int err_stat;
+
+		sprintf(tmp, "ffmpeg -y -loglevel info -f lavfi "
+			"-i anullsrc=channel_layout=stereo:sample_rate=@AUD@ "
+			"-loop 1 -i \"%s\" "
+			"-c:v libx264 -t %d -vf fps=@FPS@ -pix_fmt yuva420p  "
+			"-c:a aac -map 0:a -map 1:v "
+			" %s @LOSS@ %s ",
+
+			second, clip_duration, result, mhd_ref("jointmp.mp4", mhd_name));
+
+			err_stat = ff_run("Still", tmp, -1);
+
+		sprintf(second, "%s", mhd_ref("jointmp.mp4", mhd_name));
+		}
+
+	char tmp[16000], filetype[256];
+	int i, j, k, pcount = 0;
+
+	if (geo_test(first, second) != 1) {
+		char msg[16000];
+		sprintf(msg, "Incompatible formats or geometries:\n  %s\n  %s\n", 
+			first, second);
+		zippy_says(msg);
+		printf("*** Incompatible geometry:\n\t%s\n\t%s\n\n", first, second);
+		return -1;
+		}
+
+//------------------------
+//	length in seconds
+//------------------------
+
+	double len = GetTime(first);
+
+	len = len - trans_duration;
+
+	char ffop[32];
+
+//	https://trac.ffmpeg.org/wiki/FancyFilteringExamples
+
+	if (type == RANDOMTRAN) 
+		type = rand() % 19 + 1; // random 1 thru 19
+
+	if (type == WIPE_LEFT) strcpy(ffop, "wipeleft");
+	else if (type == CIRCLE_CLOSE) strcpy(ffop, "circleclose");
+	else if (type == DISSOLVE) strcpy(ffop, "dissolve");
+	else if (type == SLIDE_DOWN) strcpy(ffop, "slidedown");
+	else if (type == RADIAL_WIPE) strcpy(ffop, "radial");
+	else if (type == WIPEBR) strcpy(ffop, "wipebr");
+	else if (type == CIRCLECROP) strcpy(ffop, "circlecrop");
+	else if (type == PIXELIZE) strcpy(ffop, "pixelize");
+	else if (type == SLIDELEFT) strcpy(ffop, "slideleft");
+	else if (type == WIPEDOWN) strcpy(ffop, "wipedown");
+	else if (type == WIPEUP) strcpy(ffop, "wipeup");
+	else if (type == SLIDEUP) strcpy(ffop, "slideup");
+	else if (type == SLIDERIGHT) strcpy(ffop, "slideright");
+	else if (type == WIPERIGHT) strcpy(ffop, "wiperight");
+	else if (type == VERTOPEN) strcpy(ffop, "vertopen");
+	else if (type == HORZOPEN) strcpy(ffop, "horzopen");
+	else if (type == SQUEEZEH) strcpy(ffop, "squeezeh");
+	else if (type == SQUEEZEV) strcpy(ffop, "squeezev");
+	else if (type == FADE) strcpy(ffop, "fade");
+	else strcpy(ffop, "wipeleft"); // default
+
+	strcat(ffop, "\n");
+
+	printf("Joining %s to \n%s\n", first, second);
+
+        sprintf(tmp,
+                "ffmpeg -y -loglevel info -i \"%s\" -i \"%s\" "
+                "-filter_complex "
+                "\"[0v][1v]xfade=transition=%s:duration=%d:offset=%f,format=yuv420p[video];"
+                "[0:a][1:a]acrossfade=d=%d:c1=tri:c2=tri[audio]; [video]fps=@FPS@[video1]\" "
+                " -map \"[video1]\" -map \"[audio]\" -movflags +faststart @LOSS@ \"%s\" ",
+                first, second, ffop,
+                trans_duration, len,
+                trans_duration, "tmp.@FMT@");
+
+	printf("\n%s: %s\n\n", ffop, tmp);
+
+	int err = ff_run(ffop, tmp, -1);
+
+	if (err != 0) {
+		zippy_says("There were problems. Check sysout.\n");
+		printf("*** system returned %d\n", err);
+		system("rm -f tmp.@FMT@");
+		clear_play();
+		return -1;
+		}
+
+	sprintf(tmp, "rm \"%s\" && mv tmp.@FMT@ \"%s\"", first, first);
+	printf("%s\n", tmp);
+	system(tmp);
+
+	return 0;
+
+	}
+
+void    join_button_clicked() { // ok button substitute
+
+	vlc_pause();
+
+	}
+

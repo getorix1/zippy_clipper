@@ -1,0 +1,236 @@
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+
+#+     Internet Radio Automation & Encoding Toolkit
+#+
+#+     Copyright (C) 2018, 2019, 2020, 2021, 2022, 2023 
+#+     by Kevin C. O'Kane
+#+
+#+     Kevin C. O'Kane
+#+     kc.okane@gmail.com
+#+     https://www.cs.uni.edu/~okane
+#+     https://threadsafebooks.com/
+#+
+#+ This program is free software; you can redistribute it and/or modify
+#+ it under the terms of the GNU General Public License as published by
+#+ the Free Software Foundation; either version 2 of the License, or
+#+ (at your option) any later version.
+#+
+#+ This program is distributed in the hope that it will be useful,
+#+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+#+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#+ GNU General Public License for more details.
+#+
+#+ You should have received a copy of the GNU General Public License
+#+ along with this program; if not, write to the Free Software
+#+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+//	Jan 23, 2024
+
+#include "includes.h"
+#include "defines.h"
+#include "common-externs.h"
+#include "common-fcn-headers.h"
+
+
+#include <vlc/libvlc.h>
+#include <vlc/libvlc_renderer_discoverer.h>
+#include <vlc/libvlc_media.h>
+#include <vlc/libvlc_media_player.h>
+
+#define SLASH '/'
+
+gboolean	on_window_main_key_press_event(GtkWidget *w, GdkEventKey *e) {
+
+//-------------------------------------------------------
+//	return TRUE to prevent VLC from capturing event
+//-------------------------------------------------------
+
+	if (e->keyval == GDK_KEY_Left && e->state == GDK_MOD1_MASK) { // ALT
+		back_move(4000);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Left && e->state == GDK_SHIFT_MASK) {
+		back_move(3000);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Left && e->state == GDK_CONTROL_MASK) {
+		back_move(2000);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Left) {
+		back_move(1000);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Right && e->state == GDK_MOD1_MASK) { // ALT
+		forward_move(4000);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Right && e->state == GDK_SHIFT_MASK) {
+		forward_move(3000);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Right && e->state == GDK_CONTROL_MASK) {
+		forward_move(2000);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Right ) {
+		forward_move(1000);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Down) {
+
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(five_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(quad_speed), TRUE);
+			return TRUE;
+			}
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(quad_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tripple_speed), TRUE);
+			return TRUE;
+			}
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tripple_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(double_speed), TRUE);
+			return TRUE;
+			}
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(double_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_speed), TRUE);
+			return TRUE;
+			}
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(full_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(half_speed), TRUE);
+			return TRUE;
+			}
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(half_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(quarter_speed), TRUE);
+			return TRUE;
+			}
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(quarter_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(eighth_speed), TRUE);
+			return TRUE;
+			}
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(eighth_speed))) {
+			return TRUE;
+			}
+
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Up) {
+
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(eighth_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(quarter_speed), TRUE);
+			return TRUE;
+			}
+
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(quarter_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(half_speed), TRUE);
+			return TRUE;
+			}
+
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(half_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_speed), TRUE);
+			return TRUE;
+			}
+
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(full_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(double_speed), TRUE);
+			return TRUE;
+			}
+
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(double_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tripple_speed), TRUE);
+			return TRUE;
+			}
+
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tripple_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(quad_speed), TRUE);
+			return TRUE;
+			}
+
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(quad_speed))) {
+	        	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(five_speed), TRUE);
+			return TRUE;
+			}
+
+
+	        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(five_speed))) {
+			return TRUE;
+			}
+
+
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Home) {
+		on_move_to_start_clicked(NULL);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_End) {
+		on_move_to_end_clicked(NULL);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_Escape) {
+		on_clear_clip_clicked(NULL);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_s) {
+		on_start_mark_clicked(NULL);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_e) {
+		on_end_mark_clicked(NULL);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_p) {
+		on_play_clip_clicked(NULL);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_h) {
+		on_haltProgram_clicked(NULL);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_f) {
+		on_halt_ffmpeg_clicked(NULL);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_u) {
+		on_scroll_up_clicked(NULL);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_d) {
+		on_scroll_down_clicked(NULL);
+		return TRUE;
+		}
+
+	if (e->keyval == GDK_KEY_space) {
+	
+		if (!mediaPlayer) return TRUE;
+
+		if (gtk_toggle_button_get_active(frame_next))
+			gtk_toggle_button_set_active(frame_next, FALSE);
+		else
+			gtk_toggle_button_set_active(frame_next, TRUE);
+		return TRUE;
+		}
+
+	return FALSE;
+	}
+
